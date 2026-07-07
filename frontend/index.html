@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Placement Drive Clash Resolver</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Space+Grotesk:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="galaxy-glow"></div>
+    <div class="glass-container">
+        <!-- HEADER -->
+        <header class="app-header">
+            <div class="header-logo">
+                <span class="pulse-dot"></span>
+                <h1>Placement Drive Clash Resolver</h1>
+            </div>
+            <p class="tagline">Zero-Conflict Recruitment Logistics & Algorithmic Scheduling Engine</p>
+            <div class="meta-pills">
+                <span class="pill tech-stack">Node.js + Express.js</span>
+                <span class="pill stat-badge">5 Algorithmic Features</span>
+            </div>
+        </header>
+
+        <!-- DASHBOARD GRID -->
+        <main class="dashboard-grid">
+            
+            <!-- COLUMN 1: CONTROLS & DYNAMIC MODULES -->
+            <div class="main-column">
+                
+                <!-- FEATURE 1: SYNC ENGINE -->
+                <section class="card glassmorphic" id="sync-engine-card">
+                    <div class="card-header">
+                        <h2>🔄 1. Zero-Conflict Academic Timetable Sync</h2>
+                        <span class="feature-status active">Engine Live</span>
+                    </div>
+                    <p class="card-description">Cross-references candidate exam timetables and automatically proposes conflict-free slots if a booking overlap occurs.</p>
+                    <div class="flex-row">
+                        <div class="input-group">
+                            <label for="sync-student">Candidate ID</label>
+                            <select id="sync-student">
+                                <option value="STU_001">STU_001 (Preetham J)</option>
+                                <option value="STU_002">STU_002 (Aditya Roy)</option>
+                                <option value="STU_003">STU_003 (John Doe)</option>
+                            </select>
+                        </div>
+                        <div class="input-group">
+                            <label for="proposed-time">Proposed Time</label>
+                            <select id="proposed-time">
+                                <option value="600">10:00 AM</option>
+                                <option value="720">12:00 PM</option>
+                                <option value="900">03:00 PM (CN Lab Clash for STU_001)</option>
+                                <option value="960">04:00 PM (CN Lab Clash for STU_001)</option>
+                            </select>
+                        </div>
+                    </div>
+                    <button class="btn btn-primary" onclick="checkScheduleClash()">Verify & Book Slot</button>
+                    
+                    <div id="clash-result" class="result-box hidden"></div>
+                </section>
+
+                <!-- FEATURE 2: PREDICTIVE DELAY MODELING -->
+                <section class="card glassmorphic">
+                    <div class="card-header">
+                        <h2>⏳ 2. Predictive Delay Modeling</h2>
+                        <span class="feature-status warning">Simulating Pacing</span>
+                    </div>
+                    <p class="card-description">Calculates delay cascades when an interview runs over time, automatically shifting downstream schedules and notifying students.</p>
+                    
+                    <div id="timeline-list" class="timeline-container">
+                        <!-- Loaded via JS -->
+                    </div>
+
+                    <div class="flex-row flex-end" style="margin-top: 15px;">
+                        <div class="input-group">
+                            <label for="actual-duration">Actual Duration of Selected Interview (mins)</label>
+                            <input type="number" id="actual-duration" value="55" min="10" max="120">
+                        </div>
+                        <button class="btn btn-warning" onclick="logDelay()">Log Interview & Shift Slots</button>
+                    </div>
+                </section>
+
+                <!-- FEATURE 3: TRIBONACCI QUEUING -->
+                <section class="card glassmorphic">
+                    <div class="card-header">
+                        <h2>📈 3. Tribonacci-Weighted Wait Time Queuing</h2>
+                        <span class="feature-status active">Dynamic Aging</span>
+                    </div>
+                    <p class="card-description">Uses the Tribonacci sequence to scale candidate priority scores based on wait durations, preventing slow interview panels from creating stagnant queues.</p>
+                    
+                    <div class="queue-cards-wrapper" id="queue-cards-container">
+                        <!-- Queue Cards loaded via JS -->
+                    </div>
+
+                    <button class="btn btn-accent" onclick="ageQueue()">Simulate Time Step (Age Wait Queue)</button>
+                </section>
+
+                <!-- FEATURE 4: CONDITIONAL TRIGGERS -->
+                <section class="card glassmorphic">
+                    <div class="card-header">
+                        <h2>🎯 4. Multi-Stage Conditional Triggers</h2>
+                        <span class="feature-status info">Event Listener Active</span>
+                    </div>
+                    <p class="card-description">Reads interviewer assessment sheets. Passing results automatically trigger booking credentials for the next round instantly.</p>
+                    
+                    <div class="flex-row">
+                        <div class="input-group">
+                            <label for="score-student-name">Student Name</label>
+                            <input type="text" id="score-student-name" value="Preetham J">
+                        </div>
+                        <div class="input-group">
+                            <label for="score-student-id">Student ID</label>
+                            <input type="text" id="score-student-id" value="STU_001">
+                        </div>
+                        <div class="input-group">
+                            <label for="score-value">Technical Score (0-100)</label>
+                            <input type="number" id="score-value" value="85" min="0" max="100">
+                        </div>
+                    </div>
+                    <button class="btn btn-primary" onclick="logScore()">Submit Score Sheet</button>
+
+                    <div class="trigger-logs-container" id="trigger-logs">
+                        <!-- Loaded via JS -->
+                    </div>
+                </section>
+
+                <!-- FEATURE 5: BIPARTITE RE-ROUTING -->
+                <section class="card glassmorphic">
+                    <div class="card-header">
+                        <h2>🛡️ 5. Offer Hoarding Prevention (Bipartite Re-Routing)</h2>
+                        <span class="feature-status alert">Active Guard</span>
+                    </div>
+                    <p class="card-description">If a student accepts a binding offer, they are instantly removed from all concurrent queues, immediately shifting other eligible candidates up.</p>
+                    
+                    <div class="corporate-queues-grid" id="corporate-queues">
+                        <!-- Queues loaded via JS -->
+                    </div>
+
+                    <div class="flex-row flex-end" style="margin-top: 15px; align-items: flex-end;">
+                        <div class="input-group">
+                            <label for="accept-student">Accept Offer For</label>
+                            <select id="accept-student">
+                                <option value="STU_001">Preetham J (STU_001)</option>
+                                <option value="STU_002">Aditya Roy (STU_002)</option>
+                                <option value="STU_003">John Doe (STU_003)</option>
+                            </select>
+                        </div>
+                        <div class="input-group">
+                            <label for="accept-company">Company</label>
+                            <select id="accept-company">
+                                <option value="Microsoft">Microsoft</option>
+                                <option value="Google">Google</option>
+                                <option value="Meta">Meta</option>
+                            </select>
+                        </div>
+                        <button class="btn btn-danger" onclick="acceptOffer()">Accept Offer & Re-route</button>
+                    </div>
+                </section>
+            </div>
+
+            <!-- SIDEBAR: LIVE PUSH ALERTS & SYSTEM STATS -->
+            <div class="sidebar-column">
+                <section class="card glassmorphic notifications-card">
+                    <h2>📲 Automated SMS/Push Logs</h2>
+                    <div class="notifications-list" id="notifications-list">
+                        <div class="notification-item sys-msg">
+                            <span class="notif-time">System</span>
+                            <p>Simulation active. Ready to monitor events.</p>
+                        </div>
+                    </div>
+                    <button class="btn btn-outline" onclick="resetSystemState()" style="margin-top: 15px; width: 100%;">Reset Simulation State</button>
+                </section>
+
+                <section class="card glassmorphic agenda-card">
+                    <h3>💡 Project Architecture Agenda</h3>
+                    <p>Designed to eradicate operational lag, schedules overlap, and offer hoarding in high-pressure university placement settings.</p>
+                    <hr class="divider">
+                    <h4>Key Algorithmic Strengths:</h4>
+                    <ul class="agenda-list">
+                        <li><strong>Timetable Sync:</strong> Dynamic mapping.</li>
+                        <li><strong>Delay Modeler:</strong> Cascading timelines.</li>
+                        <li><strong>Tribonacci Aging:</strong> Escalates priority.</li>
+                        <li><strong>Event Triggers:</strong> Instant invitation pipelines.</li>
+                        <li><strong>Bipartite Re-routing:</strong> System-wide fairness.</li>
+                    </ul>
+                </section>
+            </div>
+
+        </main>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
