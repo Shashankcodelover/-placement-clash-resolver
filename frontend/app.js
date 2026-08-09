@@ -1,11 +1,17 @@
 const API_BASE = 'http://localhost:3000/api';
 
+const socket = io();
 let currentState = {};
 let selectedInterviewIndex = 0;
 
 // Fetch state on startup
 document.addEventListener("DOMContentLoaded", () => {
     fetchState();
+});
+
+socket.on('state_update', (newState) => {
+    currentState = newState;
+    renderUI();
 });
 
 async function fetchState() {
@@ -42,8 +48,9 @@ function addLocalLog(message) {
     const list = document.getElementById("notifications-list");
     const item = document.createElement("div");
     item.className = "notification-item sys-msg";
+    const localTime = new Intl.DateTimeFormat(navigator.language, { hour: 'numeric', minute: 'numeric', second: 'numeric' }).format(new Date());
     item.innerHTML = `
-        <span class="notif-time">${new Date().toLocaleTimeString()}</span>
+        <span class="notif-time">${localTime}</span>
         <p>${message}</p>
     `;
     list.prepend(item);
@@ -140,8 +147,12 @@ function renderUI() {
     currentState.pushNotifications.forEach(notif => {
         const item = document.createElement("div");
         item.className = "notification-item";
+        let timeStr = notif.time;
+        try {
+            timeStr = new Intl.DateTimeFormat(navigator.language, { hour: 'numeric', minute: 'numeric', second: 'numeric' }).format(new Date(notif.time));
+        } catch (e) {}
         item.innerHTML = `
-            <span class="notif-time">${notif.time} - ${notif.studentName}</span>
+            <span class="notif-time">${timeStr} - ${notif.studentName}</span>
             <p>${notif.message}</p>
         `;
         notifsContainer.appendChild(item);
@@ -156,8 +167,12 @@ function renderUI() {
     currentState.triggerLogs.forEach(log => {
         const row = document.createElement("div");
         row.className = "trigger-log-row";
+        let timeStr = log.timestamp;
+        try {
+            timeStr = new Intl.DateTimeFormat(navigator.language, { hour: 'numeric', minute: 'numeric', second: 'numeric' }).format(new Date(log.timestamp));
+        } catch (e) {}
         row.innerHTML = `
-            <span>${log.studentName} (${log.roundName})</span>
+            <span>${timeStr} | ${log.studentName} (${log.roundName})</span>
             <span>Score: ${log.score}</span>
             <span class="trigger-status ${log.pass ? 'pass' : 'fail'}">${log.pass ? 'PASSED & INVITED' : 'FAILED'}</span>
         `;

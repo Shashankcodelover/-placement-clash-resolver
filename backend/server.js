@@ -1,10 +1,20 @@
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
+const http = require('http');
+const { Server } = require('socket.io');
 
 const app = express();
 app.use(cors());
 app.use(express.json());
+
+const server = http.createServer(app);
+const io = new Server(server, {
+    cors: {
+        origin: "*",
+        methods: ["GET", "POST"]
+    }
+});
 
 // Serve static frontend assets
 app.use(express.static(path.join(__dirname, '../frontend')));
@@ -19,22 +29,22 @@ function resetState() {
         // Timetable blockouts (minutes from midnight)
         academicTimetable: {
             "STU_001": [
-                { name: "Computer Networks Lab", start: 900, end: 1100 }, // 3:00 PM - 5:20 PM
-                { name: "Midterm Exam: OS", start: 1400, end: 1530 }      // 2:00 PM - 3:30 PM (Next day simulation)
+                { name: "Computer Networks Lab", start: 900, end: 1100 }, 
+                { name: "Midterm Exam: OS", start: 1400, end: 1530 }      
             ],
             "STU_002": [
-                { name: "DBMS Lecture", start: 600, end: 690 },          // 10:00 AM - 11:30 AM
-                { name: "Compiler Design Lab", start: 900, end: 1020 }   // 3:00 PM - 5:00 PM
+                { name: "DBMS Lecture", start: 600, end: 690 },          
+                { name: "Compiler Design Lab", start: 900, end: 1020 }   
             ],
             "STU_003": [
-                { name: "VLSI Seminar", start: 660, end: 720 }            // 11:00 AM - 12:00 PM
+                { name: "VLSI Seminar", start: 660, end: 720 }            
             ]
         },
-        // Active interview queues for Panel A (recalculated upon delays)
+        // Active interview queues for Panel A
         interviews: [
-            { studentId: "STU_001", studentName: "Preetham J", scheduledStart: 600, scheduledEnd: 630, estimatedStart: 600, estimatedEnd: 630, status: "Pending" }, // 10:00 AM
-            { studentId: "STU_002", studentName: "Aditya Roy", scheduledStart: 630, scheduledEnd: 700, estimatedStart: 630, estimatedEnd: 700, status: "Pending" }, // 10:30 AM
-            { studentId: "STU_003", studentName: "John Doe", scheduledStart: 700, scheduledEnd: 730, estimatedStart: 700, estimatedEnd: 730, status: "Pending" }     // 11:00 AM
+            { studentId: "STU_001", studentName: "Preetham J", scheduledStart: 600, scheduledEnd: 630, estimatedStart: 600, estimatedEnd: 630, status: "Pending" }, 
+            { studentId: "STU_002", studentName: "Aditya Roy", scheduledStart: 630, scheduledEnd: 700, estimatedStart: 630, estimatedEnd: 700, status: "Pending" }, 
+            { studentId: "STU_003", studentName: "John Doe", scheduledStart: 700, scheduledEnd: 730, estimatedStart: 700, estimatedEnd: 730, status: "Pending" }     
         ],
         // Wait queue for the Tribonacci aging demonstration
         waitQueue: [
@@ -71,13 +81,43 @@ function getTribonacciValue(n) {
     return c;
 }
 
-// Convert minutes to time string
+// Convert minutes to time string handling multi-day overflow
 function minToTimeStr(min) {
-    const hrs = Math.floor(min / 60);
-    const mins = min % 60;
+    const day = Math.floor(min / 1440);
+    const dayMin = min % 1440;
+    const hrs = Math.floor(dayMin / 60);
+    const mins = dayMin % 60;
     const ampm = hrs >= 12 ? 'PM' : 'AM';
     const displayHrs = hrs % 12 === 0 ? 12 : hrs % 12;
-    return `${displayHrs.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')} ${ampm}`;
+    const timeStr = `${displayHrs.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')} ${ampm}`;
+    return day > 0 ? `${timeStr} (+${day} Day)` : timeStr;
+}
+
+// Websocket logic
+io.on('connection', (socket) => {
+    socket.emit('state_update', systemState);
+});
+
+function broadcastState() {
+    io.emit('state_update', systemState);
+}
+
+// Helper to check if a student is currently busy (academic or interview)
+function isStudentBusy(studentId, startMin, endMin) {
+    const timetable = systemState.academicTimetable[studentId] || [];
+    const academicClash = timetable.some(block => {
+        return (startMin < block.end && endMin > block.start);
+    });
+    if (academicClash) return true;
+
+    // Check interviews
+    const interviewClash = systemState.interviews.some(interview => {
+        if (interview.studentId !== studentId) return false;
+        if (interview.status === "Completed") return false;
+        return (startMin < interview.estimatedEnd && endMin > interview.estimatedStart);
+    });
+    
+    return interviewClash;
 }
 
 // ================================================================================
@@ -92,12 +132,13 @@ app.get('/api/state', (req, res) => {
 // Reset State
 app.post('/api/reset', (req, res) => {
     resetState();
+    broadcastState();
     res.json({ message: "System state reset successfully.", state: systemState });
 });
 
 // Check Clash (Feature 1)
 app.post('/api/check-clash', (req, res) => {
-    const { studentId, proposedStart, duration } = req.body; // proposedStart in minutes, e.g., 900 (3 PM)
+    const { studentId, proposedStart, duration } = req.body; 
     const timetable = systemState.academicTimetable[studentId] || [];
     const proposedEnd = proposedStart + duration;
 
@@ -112,10 +153,24 @@ app.post('/api/check-clash', (req, res) => {
         });
     }
 
-    // Compute 3 alternatives within university hours (9 AM - 5 PM: 540 - 1020 mins)
+    // Compute 3 alternatives allowing multi-day overflow
     const alternatives = [];
-    let cursor = 540;
-    while (cursor + duration <= 1020) {
+    let cursor = proposedStart < 540 ? 540 : proposedStart; 
+    let daysAdded = Math.floor(cursor / 1440);
+
+    while (alternatives.length < 3) {
+        let currentDayOffset = daysAdded * 1440;
+        let dayCursor = cursor % 1440;
+        
+        // Ensure within 9 AM - 5 PM
+        if (dayCursor < 540) {
+            cursor = currentDayOffset + 540;
+        } else if (dayCursor + duration > 1020) {
+            daysAdded++;
+            cursor = (daysAdded * 1440) + 540;
+            continue;
+        }
+
         const tempEnd = cursor + duration;
         const conflicts = timetable.some(block => {
             return (cursor < block.end && tempEnd > block.start);
@@ -137,7 +192,7 @@ app.post('/api/check-clash', (req, res) => {
         clashDetail: clash.name,
         clashStart: minToTimeStr(clash.start),
         clashEnd: minToTimeStr(clash.end),
-        suggestedAlternatives: alternatives.slice(0, 3)
+        suggestedAlternatives: alternatives
     });
 });
 
@@ -158,23 +213,22 @@ app.post('/api/log-delay', (req, res) => {
     activeInterview.actualEnd = activeInterview.estimatedStart + actualDuration;
 
     if (delay > 0) {
-        // Shift downstream schedules
         for (let i = idx + 1; i < systemState.interviews.length; i++) {
             systemState.interviews[i].estimatedStart += delay;
             systemState.interviews[i].estimatedEnd += delay;
 
-            // Generate notification
             const newTimeStr = minToTimeStr(systemState.interviews[i].estimatedStart);
             const msg = `🔔 Hi ${systemState.interviews[i].studentName}, due to an earlier delay, your interview is rescheduled to ${newTimeStr}. Please prepare accordingly.`;
             systemState.pushNotifications.push({
                 studentId: systemState.interviews[i].studentId,
                 studentName: systemState.interviews[i].studentName,
                 message: msg,
-                time: new Date().toLocaleTimeString()
+                time: new Date().toISOString()
             });
         }
     }
 
+    broadcastState();
     res.json({ message: "Delay logged and downstream slots updated.", state: systemState });
 });
 
@@ -183,13 +237,12 @@ app.post('/api/age-queue', (req, res) => {
     systemState.waitQueue.forEach(student => {
         student.waitIntervals += 1;
         const weight = getTribonacciValue(student.waitIntervals);
-        // Priority Score = Base Score + (Tribonacci Weight * Coefficient of 6)
         student.priorityScore = student.baseScore + (weight * 6);
     });
 
-    // Re-sort the queue
     systemState.waitQueue.sort((a, b) => b.priorityScore - a.priorityScore);
 
+    broadcastState();
     res.json({ message: "Queue aged using Tribonacci aging factor.", queue: systemState.waitQueue });
 });
 
@@ -211,7 +264,7 @@ app.post('/api/log-score', (req, res) => {
             studentId,
             studentName,
             message: `🎉 Congrats! You passed the ${roundName}. Click here to book your HR round: ${link}`,
-            time: new Date().toLocaleTimeString()
+            time: new Date().toISOString()
         });
     } else {
         logMsg += `❌ Candidate did not meet cut-off threshold.`;
@@ -224,19 +277,18 @@ app.post('/api/log-score', (req, res) => {
         score: scoreNum,
         pass,
         alertSent,
-        timestamp: new Date().toLocaleTimeString()
+        timestamp: new Date().toISOString()
     });
 
+    broadcastState();
     res.json({ message: logMsg, state: systemState });
 });
 
-// Accept Offer (Feature 5)
+// Accept Offer (Feature 5) - Bipartite Re-routing with Clash Prevention
 app.post('/api/accept-offer', (req, res) => {
     const { studentId, studentName, companyName } = req.body;
-    
     const reRoutedCompanies = [];
 
-    // Remove candidate from all concurrent company queues
     Object.keys(systemState.corporateQueues).forEach(company => {
         const queue = systemState.corporateQueues[company];
         const index = queue.indexOf(studentId);
@@ -245,19 +297,45 @@ app.post('/api/accept-offer', (req, res) => {
             queue.splice(index, 1);
             reRoutedCompanies.push(company);
 
-            // Notify new front runner in queue
-            const nextCandidate = queue[0];
-            if (nextCandidate) {
+            // Fetch current time (simulated via max estimated end of current interviews, or defaulting to 600)
+            const currentTime = Math.max(...systemState.interviews.map(i => i.estimatedStart), 600);
+            
+            // Look for next non-busy candidate
+            let foundCandidate = null;
+            let attempts = 0;
+            const maxAttempts = queue.length;
+            
+            while(attempts < maxAttempts && queue.length > 0) {
+                const candidate = queue[0];
+                if (isStudentBusy(candidate, currentTime, currentTime + 60)) {
+                    // Candidate is busy, they are bypassed for immediate slot
+                    systemState.pushNotifications.push({
+                        studentId: candidate,
+                        studentName: `Candidate ${candidate}`,
+                        message: `⚠️ We tried to pull you up for ${company} but you had a schedule clash!`,
+                        time: new Date().toISOString()
+                    });
+                    const shifted = queue.shift();
+                    queue.push(shifted);
+                } else {
+                    foundCandidate = candidate;
+                    break;
+                }
+                attempts++;
+            }
+
+            if (foundCandidate) {
                 systemState.pushNotifications.push({
-                    studentId: nextCandidate,
-                    studentName: `Candidate ${nextCandidate}`,
+                    studentId: foundCandidate,
+                    studentName: `Candidate ${foundCandidate}`,
                     message: `🚀 You have been promoted to the active interview candidate position for ${company}!`,
-                    time: new Date().toLocaleTimeString()
+                    time: new Date().toISOString()
                 });
             }
         }
     });
 
+    broadcastState();
     res.json({
         message: `Student ${studentName} accepted binding offer from ${companyName}. De-queued from: ${reRoutedCompanies.join(', ')}.`,
         state: systemState
@@ -266,6 +344,6 @@ app.post('/api/accept-offer', (req, res) => {
 
 // Start Server
 const PORT = 3000;
-app.listen(PORT, () => {
+server.listen(PORT, () => {
     console.log(`🚀 Placement Drive Clash Resolver running on http://localhost:${PORT}`);
 });
