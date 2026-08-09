@@ -1,6 +1,6 @@
 const API_BASE = 'http://localhost:3000/api';
 
-const socket = io();
+const socket = io({ auth: { token: "supersecret123" } });
 let currentState = {};
 let selectedInterviewIndex = 0;
 
