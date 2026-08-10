@@ -1,3 +1,4 @@
+require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
@@ -5,6 +6,8 @@ const http = require('http');
 const { Server } = require('socket.io');
 const fs = require('fs');
 const { z } = require('zod');
+const jwt = require('jsonwebtoken');
+const writeFileAtomicSync = require('write-file-atomic').sync;
 
 const app = express();
 app.use(cors());
@@ -12,13 +15,28 @@ app.use(express.json());
 
 const server = http.createServer(app);
 
+const JWT_SECRET = process.env.JWT_SECRET || 'fallback-secret-for-dev';
+const WS_TOKEN = process.env.WS_TOKEN || 'supersecret123';
+
+const authMiddleware = (req, res, next) => {
+    const authHeader = req.headers.authorization;
+    if (!authHeader) return res.status(401).json({ error: "No token provided" });
+    const token = authHeader.split(' ')[1];
+    try {
+        jwt.verify(token, JWT_SECRET);
+        next();
+    } catch (e) {
+        res.status(401).json({ error: "Invalid token" });
+    }
+};
+
 // FIX #4: Secure WebSocket
 const io = new Server(server, {
     cors: { origin: "*" }
 });
 io.use((socket, next) => {
     const token = socket.handshake.auth.token;
-    if (token === "supersecret123") {
+    if (token === WS_TOKEN) {
         next();
     } else {
         next(new Error("Authentication error"));
@@ -32,7 +50,7 @@ const DB_FILE = path.join(__dirname, 'db.json');
 let systemState = {};
 
 function saveState() {
-    fs.writeFileSync(DB_FILE, JSON.stringify(systemState, null, 2));
+    writeFileAtomicSync(DB_FILE, JSON.stringify(systemState, null, 2));
 }
 
 function loadState() {
@@ -44,10 +62,9 @@ function loadState() {
 }
 
 // Helper to generate ISO starting times for today
-const today = new Date();
-today.setUTCHours(0, 0, 0, 0); // Start of today in UTC
-
 function getISOOffsetMins(minutes) {
+    const today = new Date();
+    today.setUTCHours(0, 0, 0, 0); // Start of today in UTC
     const d = new Date(today);
     d.setUTCMinutes(d.getUTCMinutes() + minutes);
     return d.toISOString();
@@ -93,9 +110,9 @@ function resetState() {
 
 loadState();
 
-// FIX #1: Bounded Growth instead of Tribonacci overflow
+// FIX #1: Bounded Growth without hard ceiling
 function getBoundedPriority(base, intervals) {
-    return Math.floor(base + (20 * (1 - Math.exp(-0.2 * intervals))));
+    return Math.floor(base + 10 * Math.log2(1 + intervals));
 }
 
 io.on('connection', (socket) => {
@@ -103,6 +120,12 @@ io.on('connection', (socket) => {
 });
 
 function broadcastState() {
+    if (systemState.pushNotifications.length > 100) {
+        systemState.pushNotifications = systemState.pushNotifications.slice(-100);
+    }
+    if (systemState.triggerLogs.length > 100) {
+        systemState.triggerLogs = systemState.triggerLogs.slice(-100);
+    }
     saveState(); // Save to disk on every state mutation
     io.emit('state_update', systemState);
 }
@@ -132,17 +155,41 @@ const checkClashSchema = z.object({
     duration: z.number().positive() 
 });
 
+const logDelaySchema = z.object({
+    interviewIndex: z.union([z.string(), z.number()]),
+    actualDuration: z.number().positive()
+});
+
+const logScoreSchema = z.object({
+    studentId: z.string(),
+    studentName: z.string(),
+    roundName: z.string(),
+    score: z.union([z.string(), z.number()]),
+    threshold: z.union([z.string(), z.number()])
+});
+
+const acceptOfferSchema = z.object({
+    studentId: z.string(),
+    studentName: z.string(),
+    companyName: z.string()
+});
+
 app.get('/api/state', (req, res) => {
     res.json(systemState);
 });
 
-app.post('/api/reset', (req, res) => {
+app.post('/api/login', (req, res) => {
+    const token = jwt.sign({ user: 'admin' }, JWT_SECRET);
+    res.json({ token });
+});
+
+app.post('/api/reset', authMiddleware, (req, res) => {
     resetState();
     broadcastState();
     res.json({ message: "System state reset successfully.", state: systemState });
 });
 
-app.post('/api/check-clash', (req, res) => {
+app.post('/api/check-clash', authMiddleware, (req, res) => {
     try {
         const { studentId, proposedStart, duration } = checkClashSchema.parse(req.body);
         
@@ -201,9 +248,10 @@ app.post('/api/check-clash', (req, res) => {
     }
 });
 
-app.post('/api/log-delay', (req, res) => {
-    const { interviewIndex, actualDuration } = req.body;
-    const idx = parseInt(interviewIndex);
+app.post('/api/log-delay', authMiddleware, (req, res) => {
+    try {
+        const { interviewIndex, actualDuration } = logDelaySchema.parse(req.body);
+        const idx = parseInt(interviewIndex);
     
     if (idx < 0 || idx >= systemState.interviews.length) {
         return res.status(400).json({ error: "Invalid interview index" });
@@ -242,11 +290,14 @@ app.post('/api/log-delay', (req, res) => {
         }
     }
 
-    broadcastState();
-    res.json({ message: "Delay logged and panel downstream slots updated.", state: systemState });
+        broadcastState();
+        res.json({ message: "Delay logged and panel downstream slots updated.", state: systemState });
+    } catch (e) {
+        res.status(400).json({ error: e.errors || e.message });
+    }
 });
 
-app.post('/api/age-queue', (req, res) => {
+app.post('/api/age-queue', authMiddleware, (req, res) => {
     systemState.waitQueue.forEach(student => {
         student.waitIntervals += 1;
         student.priorityScore = getBoundedPriority(student.baseScore, student.waitIntervals);
@@ -258,8 +309,9 @@ app.post('/api/age-queue', (req, res) => {
     res.json({ message: "Queue aged safely.", queue: systemState.waitQueue });
 });
 
-app.post('/api/log-score', (req, res) => {
-    const { studentId, studentName, roundName, score, threshold } = req.body;
+app.post('/api/log-score', authMiddleware, (req, res) => {
+    try {
+        const { studentId, studentName, roundName, score, threshold } = logScoreSchema.parse(req.body);
     const scoreNum = parseInt(score);
     if(isNaN(scoreNum)) return res.status(400).json({ error: "Invalid score" });
 
@@ -291,12 +343,16 @@ app.post('/api/log-score', (req, res) => {
         timestamp: new Date().toISOString()
     });
 
-    broadcastState();
-    res.json({ message: logMsg, state: systemState });
+        broadcastState();
+        res.json({ message: logMsg, state: systemState });
+    } catch (e) {
+        res.status(400).json({ error: e.errors || e.message });
+    }
 });
 
-app.post('/api/accept-offer', (req, res) => {
-    const { studentId, studentName, companyName } = req.body;
+app.post('/api/accept-offer', authMiddleware, (req, res) => {
+    try {
+        const { studentId, studentName, companyName } = acceptOfferSchema.parse(req.body);
     const reRoutedCompanies = [];
 
     Object.keys(systemState.corporateQueues).forEach(company => {
@@ -309,11 +365,11 @@ app.post('/api/accept-offer', (req, res) => {
 
             let foundCandidate = null;
             
-            // Look for next candidate without mutating the queue's remaining order for bypassed students
             for (let i = 0; i < queue.length; i++) {
                 const candidate = queue[i];
-                const startIso = new Date().toISOString();
-                const endIso = new Date(Date.now() + 3600000).toISOString();
+                // Check if they are busy for the upcoming interview slot, assume new slot is around 800 mins
+                const startIso = getISOOffsetMins(800);
+                const endIso = getISOOffsetMins(860);
 
                 if (isStudentBusy(candidate, startIso, endIso)) {
                     systemState.pushNotifications.push({
@@ -339,14 +395,20 @@ app.post('/api/accept-offer', (req, res) => {
         }
     });
 
-    broadcastState();
-    res.json({
-        message: `Student ${studentName} accepted binding offer from ${companyName}. De-queued from: ${reRoutedCompanies.join(', ')}.`,
-        state: systemState
-    });
+        broadcastState();
+        res.json({
+            message: `Student ${studentName} accepted binding offer from ${companyName}. De-queued from: ${reRoutedCompanies.join(', ')}.`,
+            state: systemState
+        });
+    } catch (e) {
+        res.status(400).json({ error: e.errors || e.message });
+    }
 });
 
-const PORT = 3000;
-server.listen(PORT, () => {
-    console.log(`🚀 Placement Drive Clash Resolver running on http://localhost:${PORT}`);
-});
+const PORT = process.env.PORT || 3000;
+if (require.main === module) {
+    server.listen(PORT, () => {
+        console.log(`🚀 Placement Drive Clash Resolver running on http://localhost:${PORT}`);
+    });
+}
+module.exports = { app, server, io, getBoundedPriority };

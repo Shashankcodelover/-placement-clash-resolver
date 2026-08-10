@@ -1,0 +1,141 @@
+{
+  "academicTimetable": {
+    "STU_001": [
+      {
+        "name": "Computer Networks Lab",
+        "start": "2026-08-10T15:00:00.000Z",
+        "end": "2026-08-10T18:20:00.000Z"
+      },
+      {
+        "name": "Midterm Exam: OS",
+        "start": "2026-08-10T23:20:00.000Z",
+        "end": "2026-08-11T01:30:00.000Z"
+      }
+    ],
+    "STU_002": [
+      {
+        "name": "DBMS Lecture",
+        "start": "2026-08-10T10:00:00.000Z",
+        "end": "2026-08-10T11:30:00.000Z"
+      },
+      {
+        "name": "Compiler Design Lab",
+        "start": "2026-08-10T15:00:00.000Z",
+        "end": "2026-08-10T17:00:00.000Z"
+      }
+    ],
+    "STU_003": [
+      {
+        "name": "VLSI Seminar",
+        "start": "2026-08-10T11:00:00.000Z",
+        "end": "2026-08-10T12:00:00.000Z"
+      }
+    ]
+  },
+  "interviews": [
+    {
+      "panelId": "PanelA",
+      "studentId": "STU_001",
+      "studentName": "Preetham J",
+      "scheduledStart": "2026-08-10T10:00:00.000Z",
+      "scheduledEnd": "2026-08-10T10:30:00.000Z",
+      "estimatedStart": "2026-08-10T10:00:00.000Z",
+      "estimatedEnd": "2026-08-10T10:30:00.000Z",
+      "status": "Pending"
+    },
+    {
+      "panelId": "PanelA",
+      "studentId": "STU_002",
+      "studentName": "Aditya Roy",
+      "scheduledStart": "2026-08-10T10:30:00.000Z",
+      "scheduledEnd": "2026-08-10T11:40:00.000Z",
+      "estimatedStart": "2026-08-10T10:30:00.000Z",
+      "estimatedEnd": "2026-08-10T11:40:00.000Z",
+      "status": "Pending"
+    },
+    {
+      "panelId": "PanelB",
+      "studentId": "STU_003",
+      "studentName": "John Doe",
+      "scheduledStart": "2026-08-10T11:40:00.000Z",
+      "scheduledEnd": "2026-08-10T12:10:00.000Z",
+      "estimatedStart": "2026-08-10T11:40:00.000Z",
+      "estimatedEnd": "2026-08-10T12:10:00.000Z",
+      "status": "Pending"
+    }
+  ],
+  "waitQueue": [
+    {
+      "studentId": "STU_001",
+      "studentName": "Preetham J (STU_001)",
+      "waitIntervals": 0,
+      "baseScore": 45,
+      "priorityScore": 45
+    },
+    {
+      "studentId": "STU_002",
+      "studentName": "Aditya Roy (STU_002)",
+      "waitIntervals": 0,
+      "baseScore": 55,
+      "priorityScore": 55
+    },
+    {
+      "studentId": "STU_003",
+      "studentName": "John Doe (STU_003)",
+      "waitIntervals": 0,
+      "baseScore": 65,
+      "priorityScore": 65
+    }
+  ],
+  "triggerLogs": [
+    {
+      "studentId": "STU_001",
+      "studentName": "Test",
+      "roundName": "Test Round",
+      "score": 85,
+      "pass": true,
+      "alertSent": true,
+      "timestamp": "2026-08-10T07:29:05.422Z"
+    },
+    {
+      "studentId": "STU_001",
+      "studentName": "Test",
+      "roundName": "Test Round",
+      "score": 85,
+      "pass": true,
+      "alertSent": true,
+      "timestamp": "2026-08-10T07:28:27.801Z"
+    }
+  ],
+  "corporateQueues": {
+    "Google": [
+      "STU_001",
+      "STU_003",
+      "STU_004"
+    ],
+    "Microsoft": [
+      "STU_002",
+      "STU_001",
+      "STU_005"
+    ],
+    "Meta": [
+      "STU_003",
+      "STU_001",
+      "STU_002"
+    ]
+  },
+  "pushNotifications": [
+    {
+      "studentId": "STU_001",
+      "studentName": "Test",
+      "message": "🎉 Congrats! You passed the Test Round. Click here to book your HR round: https://placements.uni.edu/book-slot?studentId=STU_001&round=HR",
+      "time": "2026-08-10T07:28:27.801Z"
+    },
+    {
+      "studentId": "STU_001",
+      "studentName": "Test",
+      "message": "🎉 Congrats! You passed the Test Round. Click here to book your HR round: https://placements.uni.edu/book-slot?studentId=STU_001&round=HR",
+      "time": "2026-08-10T07:29:05.422Z"
+    }
+  ]
+}

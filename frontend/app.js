@@ -14,8 +14,15 @@ socket.on('state_update', (newState) => {
     renderUI();
 });
 
+let authToken = null;
+
 async function fetchState() {
     try {
+        // Authenticate first
+        const authRes = await fetch(`${API_BASE}/login`, { method: 'POST' });
+        const authData = await authRes.json();
+        authToken = authData.token;
+
         const response = await fetch(`${API_BASE}/state`);
         currentState = await response.json();
         renderUI();
@@ -26,7 +33,10 @@ async function fetchState() {
 
 async function resetSystemState() {
     try {
-        const response = await fetch(`${API_BASE}/reset`, { method: 'POST' });
+        const response = await fetch(`${API_BASE}/reset`, { 
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${authToken}` }
+        });
         const res = await response.json();
         currentState = res.state;
         renderUI();
@@ -205,7 +215,10 @@ async function checkScheduleClash() {
     try {
         const response = await fetch(`${API_BASE}/check-clash`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${authToken}`
+            },
             body: JSON.stringify({ studentId, proposedStart, duration: 60 })
         });
         
@@ -222,12 +235,13 @@ async function checkScheduleClash() {
                 altHTML += `<li>👉 ${alt.startStr} - ${alt.endStr}</li>`;
             });
             resultBox.innerHTML = `
-                ❌ <strong>Clash Detected!</strong> Candidate has a mandatory <strong>"${data.clashDetail}"</strong> scheduled during this time (${data.clashStart} - ${data.clashEnd}).<br><br>
+                ❌ <strong>Clash Detected!</strong> Candidate has a mandatory <strong id="clash-detail-container"></strong> scheduled during this time (${data.clashStart} - ${data.clashEnd}).<br><br>
                 <strong>Suggested Conflict-Free Slots:</strong>
                 <ul style="margin-top:5px; padding-left: 20px;">
                     ${altHTML}
                 </ul>
             `;
+            document.getElementById("clash-detail-container").textContent = `"${data.clashDetail}"`;
             addLocalLog(`⚠️ Clash detected for ${studentId} at ${minToTimeStr(proposedStart)}`);
         }
     } catch (err) {
@@ -241,7 +255,10 @@ async function logDelay() {
     try {
         const response = await fetch(`${API_BASE}/log-delay`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${authToken}`
+            },
             body: JSON.stringify({ interviewIndex: selectedInterviewIndex, actualDuration: duration })
         });
         const data = await response.json();
@@ -256,7 +273,10 @@ async function logDelay() {
 // Age Wait Queue (Feature 3)
 async function ageQueue() {
     try {
-        const response = await fetch(`${API_BASE}/age-queue`, { method: 'POST' });
+        const response = await fetch(`${API_BASE}/age-queue`, { 
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${authToken}` }
+        });
         const data = await response.json();
         currentState.waitQueue = data.queue;
         renderUI();
@@ -275,7 +295,10 @@ async function logScore() {
     try {
         const response = await fetch(`${API_BASE}/log-score`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${authToken}`
+            },
             body: JSON.stringify({
                 studentId: id,
                 studentName: name,
@@ -302,7 +325,10 @@ async function acceptOffer() {
     try {
         const response = await fetch(`${API_BASE}/accept-offer`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${authToken}`
+            },
             body: JSON.stringify({ studentId, studentName, companyName })
         });
         const data = await response.json();
