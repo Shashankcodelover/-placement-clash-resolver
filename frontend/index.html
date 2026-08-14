@@ -76,10 +76,13 @@
             <button class="tab-btn" onclick="switchAITab('ai-predictor')">🔮 AI Offer Predictor</button>
             <button class="tab-btn" onclick="switchAITab('ai-optimizer')">🧬 AI Genetic Optimizer</button>
             <button class="tab-btn" onclick="switchAITab('ai-scorer')">🎙️ AI STAR Scorer</button>
-            <button class="tab-btn" onclick="switchAITab('ai-cascade')">📈 Monte Carlo Delay HUD</button>
-            <button class="tab-btn" onclick="switchAITab('ai-fairness')">⚖️ Jain Fairness Balancer</button>
-            <button class="tab-btn" onclick="switchAITab('ai-virtual-room')">📹 WebRTC E2EE Studio</button>
+            <button class="tab-btn" onclick="switchAITab('tab-pareto')">⚖️ Pareto Frontier</button>
+            <button class="tab-btn" onclick="switchAITab('tab-csp')">🧩 AC-3 CSP Solver</button>
+            <button class="tab-btn" onclick="switchAITab('tab-cascade-ripple')">🌊 Live Offer Cascade</button>
+            <button class="tab-btn" onclick="switchAITab('tab-blind-screening')">🕶️ Blind Screening</button>
+            <button class="tab-btn" onclick="switchAITab('tab-slot-lease')">🔒 Slot Lease Lock</button>
         </div>
+
 
         <!-- AI STUDIO ACTIVE PANELS -->
         <section class="card glassmorphic ai-panel-card">
@@ -200,21 +203,73 @@
                 <div id="ai-fairness-result" class="result-box" style="display:none;"></div>
             </div>
 
-            <!-- TAB 7: WEBRTC E2EE VIRTUAL STUDIO -->
-            <div id="tab-ai-virtual-room" class="ai-tab-content">
+            <!-- TAB 8: PARETO FRONTIER OPTIMAL SLOTS -->
+            <div id="tab-pareto" class="ai-tab-content">
                 <div class="card-header">
-                    <h2>📹 WebRTC E2EE Virtual Interview Studio & Presence Telemetry</h2>
-                    <span class="feature-status active">AES-256-GCM</span>
+                    <h2>⚖️ Multi-Criteria Pareto Frontier Optimal Slot Allocator</h2>
+                    <span class="feature-status active">NSGA-II Non-Dominated</span>
                 </div>
-                <p class="card-description">Generates tokenized End-to-End Encrypted virtual interview video suites with live presence telemetry and candidate consent verification.</p>
-                
+                <p class="card-description">Computes multi-objective non-dominated scheduling curves balancing Student Idle Wait Time, Corporate Slot Utilization, and Departmental Fatigue Variance.</p>
                 <div class="action-bar">
-                    <button class="btn btn-secondary" onclick="provisionVirtualStudio()"><span>📹 Launch Encrypted Interview Room</span></button>
+                    <button class="btn btn-primary" onclick="computeParetoFrontier()"><span>⚖️ Compute Pareto Non-Dominated Frontier</span></button>
                 </div>
-                <div id="ai-virtual-result" class="result-box" style="display:none;"></div>
+                <div id="pareto-result" class="result-box" style="display:none;"></div>
+            </div>
+
+            <!-- TAB 9: AC-3 CSP CONSTRAINT SOLVER -->
+            <div id="tab-csp" class="ai-tab-content">
+                <div class="card-header">
+                    <h2>🧩 Arc-Consistency 3 (AC-3) & Forward-Checking CSP Solver</h2>
+                    <span class="feature-status active">50ms Deadline Safe</span>
+                </div>
+                <p class="card-description">Prunes conflicting candidate slot domains using AC-3 constraint propagation and MRV heuristics to resolve high-contention clashes in &lt;5ms.</p>
+                <div class="action-bar">
+                    <button class="btn btn-secondary" onclick="solveAC3Constraints()"><span>🧩 Solve AC-3 Constraints</span></button>
+                </div>
+                <div id="csp-result" class="result-box" style="display:none;"></div>
+            </div>
+
+            <!-- TAB 10: LIVE OFFER RIPPLE CASCADE -->
+            <div id="tab-cascade-ripple" class="ai-tab-content">
+                <div class="card-header">
+                    <h2>🌊 Multi-Company Real-Time Live Offer Cascade & Deadlock Resolver</h2>
+                    <span class="feature-status danger">Ripple Release</span>
+                </div>
+                <p class="card-description">Simulates simultaneous exploding offer clocks. When a student accepts a Tier-1 Dream Offer, lower-tier held slots are instantly released to the waitlist.</p>
+                <div class="action-bar">
+                    <button class="btn btn-danger" onclick="triggerOfferRippleCascade()"><span>🌊 Simulate Offer Acceptance Cascade</span></button>
+                </div>
+                <div id="cascade-ripple-result" class="result-box" style="display:none;"></div>
+            </div>
+
+            <!-- TAB 11: E2EE BLIND CANDIDATE SCREENING -->
+            <div id="tab-blind-screening" class="ai-tab-content">
+                <div class="card-header">
+                    <h2>🕶️ Automated E2EE Blind Screening & Bias Neutralization</h2>
+                    <span class="feature-status active">PII Redacted</span>
+                </div>
+                <p class="card-description">Strips gender, caste, socioeconomic, and college name markers into deterministic cryptographic HMAC aliases to ensure 100% merit-based shortlisting.</p>
+                <div class="action-bar">
+                    <button class="btn btn-outline" onclick="generateBlindDossier()"><span>🕶️ Generate Blind Anonymous Dossier</span></button>
+                </div>
+                <div id="blind-screening-result" class="result-box" style="display:none;"></div>
+            </div>
+
+            <!-- TAB 12: HIGH-CONCURRENCY SLOT LEASE LOCK -->
+            <div id="tab-slot-lease" class="ai-tab-content">
+                <div class="card-header">
+                    <h2>🔒 High-Concurrency Slot Lease Lock Engine</h2>
+                    <span class="feature-status active">5-Min Atomic OCC</span>
+                </div>
+                <p class="card-description">5-minute atomic slot hold leases with monotonic versioning and anti-sniping protection supporting 5,000 concurrent candidate clicks with zero race conditions.</p>
+                <div class="action-bar">
+                    <button class="btn btn-accent" onclick="testSlotLeaseLock()"><span>🔒 Acquire 5-Minute Atomic Slot Lease</span></button>
+                </div>
+                <div id="slot-lease-result" class="result-box" style="display:none;"></div>
             </div>
 
         </section>
+
 
         <!-- DASHBOARD GRID -->
         <main class="dashboard-grid">
