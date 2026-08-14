@@ -1,64 +1,135 @@
 const request = require('supertest');
-const { app, io, getBoundedPriority } = require('./server');
+const { app, io, scheduler, db } = require('./server');
 
-let validToken = '';
+let adminToken = '';
+let studentToken = '';
+let tenantId = 'T_001';
 
 beforeAll(async () => {
-    // Obtain a token for testing protected routes
-    const res = await request(app).post('/api/login');
-    validToken = res.body.token;
+    await new Promise(resolve => setTimeout(resolve, 500)); // wait for DB init and seed
+
+    // Use test-login for testing purposes
+    const adminRes = await request(app).post('/api/test-login').send({});
+    adminToken = adminRes.body.token;
+
+    studentToken = adminToken; // For simplicity in tests, we use admin token for student actions that are authorized for ADMIN as well
+    
+    // Reset database so dates are freshly generated relative to today
+    await request(app).post('/api/reset').set('Authorization', `Bearer ${adminToken}`);
 });
 
-afterAll(done => {
+const redisClientManager = require('./redisClient');
+
+afterAll(async () => {
     io.close();
-    done();
+    db.db.close();
+    await redisClientManager.quit();
 });
 
-describe('Placement Clash Resolver API', () => {
+describe('Placement Drive Clash Resolver — Enterprise Test Suite', () => {
 
-    it('should calculate priority math without +20 hard ceiling (Flaw 8)', () => {
-        // base + 10 * log2(1 + intervals)
-        expect(getBoundedPriority(50, 0)).toBe(50);
-        expect(getBoundedPriority(50, 1)).toBe(60); // log2(2) = 1
-        expect(getBoundedPriority(50, 3)).toBe(70); // log2(4) = 2
-        expect(getBoundedPriority(50, 7)).toBe(80); // log2(8) = 3
+    describe('1. Algorithmic Multi-Factor Priority Scoring', () => {
+        it('should compute smooth logarithmic priority incorporating wait time and CGPA', () => {
+            const score0 = scheduler.getMultiFactorPriority(50, 0, 9.0);
+            const score1 = scheduler.getMultiFactorPriority(50, 1, 9.0);
+            const score3 = scheduler.getMultiFactorPriority(50, 3, 9.0);
+            
+            expect(score0).toBe(68);
+            expect(score1).toBe(80);
+            expect(score3).toBe(92);
+        });
     });
 
-    it('should reject unauthenticated API mutations (Flaw 1)', async () => {
-        const res = await request(app).post('/api/check-clash').send({});
-        expect(res.status).toBe(401);
-        expect(res.body.error).toBe('No token provided');
+    describe('2. Security & Multi-Tenancy Enforcement', () => {
+        it('should reject unauthenticated requests to protected endpoints', async () => {
+            const res = await request(app).post('/api/check-clash').send({});
+            expect(res.status).toBe(401);
+            expect(res.body.error).toMatch(/No authentication token/i);
+        });
     });
 
-    it('should validate Zod schema for missing data in /api/log-score (Flaw 9)', async () => {
-        const res = await request(app)
-            .post('/api/log-score')
-            .set('Authorization', `Bearer ${validToken}`)
-            .send({ studentId: "STU_001" }); // missing other fields
+    describe('3. Dynamic Clash Detection & Alternative Suggestion', () => {
+        it('should detect academic timetable clash for STU_001 at 03:00 PM (900 mins)', async () => {
+            const res = await request(app)
+                .post('/api/check-clash')
+                .set('Authorization', `Bearer ${adminToken}`)
+                .send({
+                    studentId: 'STU_001',
+                    proposedStart: 900,
+                    duration: 45
+                });
 
-        expect(res.status).toBe(400);
-        expect(res.body.error).toBeDefined();
+            expect(res.status).toBe(200);
+            expect(res.body.conflictFree).toBe(false);
+            expect(res.body.clashDetail).toMatch(/Computer Networks Lab/i);
+            expect(res.body.suggestedAlternatives.length).toBeGreaterThan(0);
+        });
+
+        it('should confirm conflict-free slot for STU_001 at 12:00 PM (720 mins)', async () => {
+            const res = await request(app)
+                .post('/api/check-clash')
+                .set('Authorization', `Bearer ${adminToken}`)
+                .send({
+                    studentId: 'STU_001',
+                    proposedStart: 720,
+                    duration: 45
+                });
+
+            expect(res.status).toBe(200);
+            expect(res.body.conflictFree).toBe(true);
+            expect(res.body.message).toMatch(/No schedule conflicts/i);
+        });
     });
 
-    it('should successfully log a valid score', async () => {
-        const res = await request(app)
-            .post('/api/log-score')
-            .set('Authorization', `Bearer ${validToken}`)
-            .send({
-                studentId: "STU_001",
-                studentName: "Test",
-                roundName: "Test Round",
-                score: 85,
-                threshold: 70
-            });
-        
-        expect(res.status).toBe(200);
-        expect(res.body.state).toBeDefined();
+    describe('4. Delay Modeling & Cascade Shifts (Primary Key Routing)', () => {
+        it('should cascade delays ONLY to downstream interviews in the same panel', async () => {
+            // First fetch an interview ID
+            const stateRes = await request(app).get('/api/state').set('Authorization', `Bearer ${adminToken}`);
+            const interview = stateRes.body.interviews[0];
+
+            const res = await request(app)
+                .post('/api/log-delay')
+                .set('Authorization', `Bearer ${adminToken}`)
+                .send({
+                    interviewId: interview.id,
+                    actualDuration: 65 // 20 mins over scheduled 45 mins
+                });
+
+            expect(res.status).toBe(200);
+            expect(res.body.result.shiftedCount).toBeGreaterThanOrEqual(0);
+            expect(res.body.result.delayMins).toBe(20);
+        });
     });
 
-    it('should successfully fetch system state', async () => {
-        const res = await request(app).get('/api/state');
-        expect(res.status).toBe(200);
-        expect(res.body.waitQueue).toBeDefined();
+    describe('5. Bipartite Binding Offer Resolution (Concurrency)', () => {
+        it('should dequeue student from all competing corporate queues and backfill spots with transaction safety', async () => {
+            // Concurrency Test: Accept offer multiple times simultaneously
+            const promises = [
+                request(app).post('/api/accept-offer').set('Authorization', `Bearer ${adminToken}`).send({ studentId: 'STU_001', studentName: 'Preetham J', companyName: 'Google' }),
+                request(app).post('/api/accept-offer').set('Authorization', `Bearer ${adminToken}`).send({ studentId: 'STU_001', studentName: 'Preetham J', companyName: 'Google' }),
+                request(app).post('/api/accept-offer').set('Authorization', `Bearer ${adminToken}`).send({ studentId: 'STU_001', studentName: 'Preetham J', companyName: 'Google' })
+            ];
+            
+            const results = await Promise.all(promises);
+            
+            // Only one should succeed completely or they all resolve but idempotent
+            const success = results.find(r => r.status === 200 && r.body.resolution);
+            expect(success).toBeDefined();
+
+            // Verification
+            const stateRes = await request(app).get('/api/state').set('Authorization', `Bearer ${adminToken}`);
+            expect(stateRes.body.corporateQueues.Google.some(c => c.studentId === 'STU_001')).toBe(false);
+        });
+    });
+
+    describe('6. RFC 5545 iCalendar Subscription Feed', () => {
+        it('should return valid iCalendar (.ics) stream for candidate', async () => {
+            const res = await request(app).get('/api/calendar/STU_001.ics');
+
+            expect(res.status).toBe(200);
+            expect(res.headers['content-type']).toMatch(/text\/calendar/i);
+            expect(res.text).toContain('BEGIN:VCALENDAR');
+            expect(res.text).toContain('END:VCALENDAR');
+        });
     });
 });

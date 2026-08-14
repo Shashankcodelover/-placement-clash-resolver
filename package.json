@@ -6,13 +6,17 @@
   "scripts": {
     "start": "node backend/server.js",
     "dev": "nodemon backend/server.js",
-    "test": "jest"
+    "test": "jest --forceExit --runInBand"
   },
   "dependencies": {
+    "@socket.io/redis-adapter": "^8.3.0",
+    "bcryptjs": "^3.0.3",
     "cors": "^2.8.5",
     "dotenv": "^17.4.2",
     "express": "^4.19.2",
     "jsonwebtoken": "^9.0.3",
+    "redis": "^6.2.1",
+    "redlock": "^5.0.0-beta.2",
     "socket.io": "^4.8.3",
     "sqlite3": "^6.0.1",
     "write-file-atomic": "^7.0.1",
