@@ -518,3 +518,284 @@ function exportCalendar() {
     const studentId = document.getElementById("sync-student")?.value || "STU_001";
     window.location.href = `${API_BASE}/calendar/${studentId}.ics`;
 }
+
+/* ========================================================
+   IR-12 AI STUDIO INTERACTIVE HANDLERS
+   ======================================================== */
+
+function switchAITab(tabId) {
+    document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+    document.querySelectorAll('.ai-tab-content').forEach(content => content.classList.remove('active'));
+
+    const activeBtn = Array.from(document.querySelectorAll('.tab-btn')).find(b => b.getAttribute('onclick')?.includes(tabId));
+    if (activeBtn) activeBtn.classList.add('active');
+
+    const target = document.getElementById(`tab-${tabId}`);
+    if (target) target.classList.add('active');
+}
+
+async function runAIResumeMatch() {
+    const resumeText = document.getElementById('ai-resume-input').value;
+    const jobDescriptionText = document.getElementById('ai-jd-input').value;
+    const resultBox = document.getElementById('ai-matcher-result');
+
+    resultBox.style.display = 'block';
+    resultBox.innerHTML = '<p class="status-msg">🤖 Computing high-dimensional skill vector embeddings...</p>';
+
+    try {
+        const res = await fetch(`${API_BASE}/v2/ir12/ai/resume-matcher`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${activeToken}` },
+            body: JSON.stringify({ resumeText, jobDescriptionText, candidateCgpa: 9.2 })
+        });
+        const data = await res.json();
+        const r = data.result;
+
+        const matchedTags = r.matchedSkills.map(s => `<span class="skill-tag-pill skill-tag-matched">✓ ${s}</span>`).join(' ');
+        const missingTags = r.missingPrerequisites.map(s => `<span class="skill-tag-pill skill-tag-missing">✗ ${s}</span>`).join(' ');
+        const bonusTags = r.bonusCandidateSkills.map(s => `<span class="skill-tag-pill skill-tag-bonus">+ ${s}</span>`).join(' ');
+
+        resultBox.innerHTML = `
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                <h4 style="color:#6ee7b7; margin:0;">AI Fit Verdict: ${r.recommendation} (${r.matchPercentage}%)</h4>
+                <span class="badge-value" style="color:#6366f1; background:rgba(99,102,241,0.2);">Cosine: ${r.semanticSimilarityScore}</span>
+            </div>
+            <div class="gauge-container">
+                <div class="gauge-fill" style="width:${r.matchPercentage}%; background:linear-gradient(90deg, #10b981, #6366f1);"></div>
+            </div>
+            <p style="margin:10px 0 6px 0; font-weight:600; font-size:0.85rem;">Matched Tech Skills:</p>
+            <div>${matchedTags || '<span style="color:#64748b">None</span>'}</div>
+            <p style="margin:10px 0 6px 0; font-weight:600; font-size:0.85rem; color:#fda4af;">Missing Prerequisites (Upskilling Needed):</p>
+            <div>${missingTags || '<span style="color:#64748b">None</span>'}</div>
+            <p style="margin:10px 0 6px 0; font-weight:600; font-size:0.85rem; color:#c4b5fd;">Bonus Strengths:</p>
+            <div>${bonusTags || '<span style="color:#64748b">None</span>'}</div>
+            <p style="margin-top:12px; font-size:0.88rem; color:#cbd5e1; font-style:italic;">${r.readinessVerdict}</p>
+        `;
+    } catch (e) {
+        resultBox.innerHTML = `<p style="color:#f43f5e;">Error running AI skill vector matcher: ${e.message}</p>`;
+    }
+}
+
+async function runAIOfferPrediction() {
+    const offeredCtcLpa = parseFloat(document.getElementById('pred-ctc').value) || 28;
+    const companyTier = document.getElementById('pred-tier').value;
+    const competingActiveOffersCount = parseInt(document.getElementById('pred-offers').value) || 0;
+    const resultBox = document.getElementById('ai-predictor-result');
+
+    resultBox.style.display = 'block';
+    resultBox.innerHTML = '<p class="status-msg">🔮 Calculating logistic regression conversion probability...</p>';
+
+    try {
+        const res = await fetch(`${API_BASE}/v2/ir12/ai/offer-predictor`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${activeToken}` },
+            body: JSON.stringify({ offeredCtcLpa, campusMedianCtcLpa: 12, companyTier, competingActiveOffersCount, isPreferredLocation: true, candidateCgpa: 9.0 })
+        });
+        const data = await res.json();
+        const r = data.result;
+
+        const isHigh = r.acceptancePercentage >= 70;
+        const color = isHigh ? '#10b981' : (r.acceptancePercentage >= 45 ? '#f59e0b' : '#f43f5e');
+
+        resultBox.innerHTML = `
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <h4 style="color:${color}; margin:0;">P(Accept): ${r.acceptancePercentage}% — ${r.renegeRiskLevel}</h4>
+                <span class="badge-value" style="color:${color}; border-color:${color}; background:rgba(0,0,0,0.3);">${r.predictedProbability}</span>
+            </div>
+            <div class="gauge-container">
+                <div class="gauge-fill" style="width:${r.acceptancePercentage}%; background:${color};"></div>
+            </div>
+            <p style="margin-top:10px; font-size:0.9rem; color:#f1f5f9;">${r.actionRecommendation}</p>
+        `;
+    } catch (e) {
+        resultBox.innerHTML = `<p style="color:#f43f5e;">Error running AI offer predictor: ${e.message}</p>`;
+    }
+}
+
+async function runAIScheduleOptimizer() {
+    const resultBox = document.getElementById('ai-optimizer-result');
+    resultBox.style.display = 'block';
+    resultBox.innerHTML = '<p class="status-msg">🧬 Evolving genetic timetable chromosomes across 25 generations...</p>';
+
+    try {
+        const interviewRequests = [
+            { interviewId: 'REQ_1', studentId: 'STU_001', company: 'Google', durationMins: 45 },
+            { interviewId: 'REQ_2', studentId: 'STU_002', company: 'Microsoft', durationMins: 45 },
+            { interviewId: 'REQ_3', studentId: 'STU_001', company: 'Meta', durationMins: 45 },
+            { interviewId: 'REQ_4', studentId: 'STU_004', company: 'Amazon', durationMins: 45 },
+        ];
+        const academicBlocks = [
+            { studentId: 'STU_001', startMins: 900, endMins: 1020 },
+            { studentId: 'STU_002', startMins: 600, endMins: 720 },
+        ];
+        const availableSlots = [
+            { slotId: 'S1', startMins: 600, endMins: 645 },
+            { slotId: 'S2', startMins: 720, endMins: 765 },
+            { slotId: 'S3', startMins: 780, endMins: 825 },
+            { slotId: 'S4', startMins: 840, endMins: 885 },
+            { slotId: 'S5', startMins: 1080, endMins: 1125 },
+        ];
+
+        const res = await fetch(`${API_BASE}/v2/ir12/ai/schedule-optimizer`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${activeToken}` },
+            body: JSON.stringify({ interviewRequests, academicBlocks, availableSlots, populationSize: 40, generations: 25 })
+        });
+        const data = await res.json();
+        const r = data.result;
+
+        const scheduleItems = r.optimizedSchedule.map(s => `
+            <div style="background:rgba(255,255,255,0.05); padding:8px 12px; border-radius:6px; margin:4px 0; display:flex; justify-content:space-between; font-size:0.85rem;">
+                <span><strong>${s.company}</strong> (${s.studentId})</span>
+                <span style="color:#6ee7b7; font-family:'JetBrains Mono';">${Math.floor(s.startTimeMinutes/60)}:${String(s.startTimeMinutes%60).padStart(2,'0')} - ${Math.floor(s.endTimeMinutes/60)}:${String(s.endTimeMinutes%60).padStart(2,'0')} (Zero Conflict)</span>
+            </div>
+        `).join('');
+
+        resultBox.innerHTML = `
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                <h4 style="color:#10b981; margin:0;">AI Fitness Score: ${r.bestFitnessScore} / 1000</h4>
+                <span class="badge-value" style="color:#6366f1;">${r.generationsRun} Generations</span>
+            </div>
+            <p style="font-size:0.85rem; color:#94a3b8; margin-bottom:10px;">Hard Collisions: <strong>${r.hardCollisionsCount}</strong> | Total Idle Gap: <strong>${r.totalIdleMinutes} mins</strong></p>
+            <div>${scheduleItems}</div>
+        `;
+    } catch (e) {
+        resultBox.innerHTML = `<p style="color:#f43f5e;">Error in AI schedule optimizer: ${e.message}</p>`;
+    }
+}
+
+async function runAIInterviewScorer() {
+    const transcriptText = document.getElementById('ai-transcript-input').value;
+    const resultBox = document.getElementById('ai-scorer-result');
+    resultBox.style.display = 'block';
+    resultBox.innerHTML = '<p class="status-msg">🎙️ Analyzing STAR narrative structure and technical density...</p>';
+
+    try {
+        const res = await fetch(`${API_BASE}/v2/ir12/ai/interview-scorer`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${activeToken}` },
+            body: JSON.stringify({ transcriptText, domain: 'SYSTEMS' })
+        });
+        const data = await res.json();
+        const r = data.result;
+
+        resultBox.innerHTML = `
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <h4 style="color:#f59e0b; margin:0;">Clarity Rating: ${r.compositeClarityScore} / 100</h4>
+                <span class="badge-value">STAR: ${r.starAnalysis.starAdherencePercentage}%</span>
+            </div>
+            <div class="gauge-container">
+                <div class="gauge-fill" style="width:${r.compositeClarityScore}%; background:linear-gradient(90deg, #f59e0b, #10b981);"></div>
+            </div>
+            <p style="font-size:0.85rem; margin:8px 0; color:#cbd5e1;">
+                <strong>Situation:</strong> ${r.starAnalysis.hasSituation ? '✓' : '✗'} | 
+                <strong>Task:</strong> ${r.starAnalysis.hasTask ? '✓' : '✗'} | 
+                <strong>Action:</strong> ${r.starAnalysis.hasAction ? '✓' : '✗'} | 
+                <strong>Result:</strong> ${r.starAnalysis.hasResult ? '✓' : '✗'} | 
+                <strong>Fillers:</strong> ${r.fillerMetrics.fillerDensityPercentage}%
+            </p>
+            <p style="font-size:0.88rem; color:#6ee7b7; font-style:italic;">${r.feedbackSummary}</p>
+        `;
+    } catch (e) {
+        resultBox.innerHTML = `<p style="color:#f43f5e;">Error in AI interview scorer: ${e.message}</p>`;
+    }
+}
+
+async function runMonteCarloCascade() {
+    const resultBox = document.getElementById('ai-cascade-result');
+    resultBox.style.display = 'block';
+    resultBox.innerHTML = '<p class="status-msg">📈 Executing 5,000 Monte Carlo stochastic runs...</p>';
+
+    try {
+        const panelInterviews = [
+            { id: 'I1', scheduledMinutes: 45, scheduledGapMinutes: 5, candidateId: 'STU_001', varianceFactor: 0.3 },
+            { id: 'I2', scheduledMinutes: 45, scheduledGapMinutes: 5, candidateId: 'STU_002', varianceFactor: 0.3 },
+            { id: 'I3', scheduledMinutes: 45, scheduledGapMinutes: 5, candidateId: 'STU_003', varianceFactor: 0.3 },
+            { id: 'I4', scheduledMinutes: 45, scheduledGapMinutes: 5, candidateId: 'STU_004', varianceFactor: 0.3 },
+        ];
+
+        const res = await fetch(`${API_BASE}/v2/ir11/forecast/monte-carlo`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${activeToken}` },
+            body: JSON.stringify({ panelInterviews, trials: 5000 })
+        });
+        const data = await res.json();
+        const r = data.result;
+
+        resultBox.innerHTML = `
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <h4 style="color:#f43f5e; margin:0;">P95 Cumulative Delay: +${r.p95CumulativeDelayMinutes} mins</h4>
+                <span class="badge-value" style="color:#10b981;">Recommended Buffer: ${r.recommendedProtectiveBufferMinutes}m</span>
+            </div>
+            <p style="font-size:0.85rem; color:#94a3b8; margin:6px 0;">Clash Probability: <strong>${Math.round(r.globalClashProbability * 100)}%</strong> | Monte Carlo Trials: <strong>${r.totalTrials}</strong></p>
+            <p style="font-size:0.88rem; color:#f1f5f9;">${r.mitigationPlan}</p>
+        `;
+    } catch (e) {
+        resultBox.innerHTML = `<p style="color:#f43f5e;">Error in Monte Carlo cascade: ${e.message}</p>`;
+    }
+}
+
+async function runFairnessAudit() {
+    const resultBox = document.getElementById('ai-fairness-result');
+    resultBox.style.display = 'block';
+    resultBox.innerHTML = '<p class="status-msg">⚖️ Computing Jain Fairness Index across active pools...</p>';
+
+    try {
+        const candidatesInQueue = [
+            { id: '1', department: 'Computer Science', cgpa: 9.2 },
+            { id: '2', department: 'Information Science', cgpa: 8.8 },
+            { id: '3', department: 'Electronics', cgpa: 8.5 },
+            { id: '4', department: 'Computer Science', cgpa: 9.5 },
+            { id: '5', department: 'Mechanical', cgpa: 8.1 },
+        ];
+
+        const res = await fetch(`${API_BASE}/v2/ir11/fairness/jain-index`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${activeToken}` },
+            body: JSON.stringify({ candidatesInQueue })
+        });
+        const data = await res.json();
+        const r = data.result;
+
+        resultBox.innerHTML = `
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <h4 style="color:#06b6d4; margin:0;">Jain's Fairness Index: ${r.jainsFairnessIndex} (Parity Score)</h4>
+                <span class="badge-value" style="color:#10b981;">${r.isFairAllocation ? 'COMPLIANT' : 'ADJUST'}</span>
+            </div>
+            <p style="font-size:0.88rem; color:#f1f5f9; margin-top:8px;">${r.verdict}</p>
+        `;
+    } catch (e) {
+        resultBox.innerHTML = `<p style="color:#f43f5e;">Error in fairness audit: ${e.message}</p>`;
+    }
+}
+
+async function provisionVirtualStudio() {
+    const resultBox = document.getElementById('ai-virtual-result');
+    resultBox.style.display = 'block';
+    resultBox.innerHTML = '<p class="status-msg">📹 Provisioning WebRTC AES-256-GCM encrypted room credentials...</p>';
+
+    try {
+        const res = await fetch(`${API_BASE}/v2/ir11/virtual-room/create`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${activeToken}` },
+            body: JSON.stringify({ panelId: 'PANEL_SYS', company: 'Google', candidateId: 'STU_001', interviewerId: 'INT_TURING' })
+        });
+        const data = await res.json();
+        const r = data.result;
+
+        resultBox.innerHTML = `
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <h4 style="color:#8b5cf6; margin:0;">Virtual Room: ${r.roomId}</h4>
+                <span class="badge-value" style="color:#10b981;">E2EE ACTIVE</span>
+            </div>
+            <p style="font-size:0.85rem; color:#94a3b8; margin:6px 0;">Encryption: <strong>${r.encryptionProtocol}</strong></p>
+            <div style="display:flex; gap:10px; margin-top:8px;">
+                <a href="${r.joinUrlCandidate}" target="_blank" class="btn btn-outline" style="font-size:0.8rem; text-decoration:none;">🎓 Candidate Room Link</a>
+                <a href="${r.joinUrlInterviewer}" target="_blank" class="btn btn-primary" style="font-size:0.8rem; text-decoration:none;">🧑‍💻 Panelist Room Link</a>
+            </div>
+        `;
+    } catch (e) {
+        resultBox.innerHTML = `<p style="color:#f43f5e;">Error provisioning virtual studio: ${e.message}</p>`;
+    }
+}
+

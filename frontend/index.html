@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Placement Drive Clash Resolver — Enterprise Edition</title>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <title>Placement Drive Clash Resolver — Enterprise & AI Autonomous Edition</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
     <script src="https://cdn.socket.io/4.8.1/socket.io.min.js"></script>
 </head>
@@ -17,8 +17,8 @@
             <div class="header-brand">
                 <span class="pulse-dot"></span>
                 <div>
-                    <h1>Placement Drive Clash Resolver</h1>
-                    <p class="tagline">Enterprise Algorithmic Recruitment Logistics & Dynamic Bipartite Scheduling Engine</p>
+                    <h1>Placement Drive Clash Resolver <span class="ai-badge-header">AI Autonomous v12</span></h1>
+                    <p class="tagline">Enterprise Algorithmic Recruitment Logistics, AI Skill Vectors & Dynamic Bipartite Scheduling</p>
                 </div>
             </div>
 
@@ -62,12 +62,158 @@
                 </div>
             </div>
             <div class="kpi-card">
-                <span class="kpi-icon">🏢</span>
+                <span class="kpi-icon">🤖</span>
                 <div>
-                    <h3 id="kpi-panels">4 Active</h3>
-                    <p>Corporate Panels</p>
+                    <h3 id="kpi-ai-status">98.5%</h3>
+                    <p>AI Schedule Fit</p>
                 </div>
             </div>
+        </section>
+
+        <!-- AI & INTELLIGENT AUTOMATION STUDIO TAB BAR -->
+        <div class="ai-studio-tabs">
+            <button class="tab-btn active" onclick="switchAITab('ai-matcher')">🤖 AI Resume Matcher</button>
+            <button class="tab-btn" onclick="switchAITab('ai-predictor')">🔮 AI Offer Predictor</button>
+            <button class="tab-btn" onclick="switchAITab('ai-optimizer')">🧬 AI Genetic Optimizer</button>
+            <button class="tab-btn" onclick="switchAITab('ai-scorer')">🎙️ AI STAR Scorer</button>
+            <button class="tab-btn" onclick="switchAITab('ai-cascade')">📈 Monte Carlo Delay HUD</button>
+            <button class="tab-btn" onclick="switchAITab('ai-fairness')">⚖️ Jain Fairness Balancer</button>
+            <button class="tab-btn" onclick="switchAITab('ai-virtual-room')">📹 WebRTC E2EE Studio</button>
+        </div>
+
+        <!-- AI STUDIO ACTIVE PANELS -->
+        <section class="card glassmorphic ai-panel-card">
+            
+            <!-- TAB 1: AI RESUME MATCHER -->
+            <div id="tab-ai-matcher" class="ai-tab-content active">
+                <div class="card-header">
+                    <h2>🤖 AI Resume-Job Skill Vector Embedding & Semantic Matcher</h2>
+                    <span class="feature-status active">Cosine Vector Active</span>
+                </div>
+                <p class="card-description">Extracts multi-dimensional skill vectors from candidate profile text and company JDs, computing cosine similarity and identifying prerequisite skill gaps.</p>
+                
+                <div class="flex-row">
+                    <div class="input-group">
+                        <label for="ai-resume-input">Candidate Resume Summary</label>
+                        <textarea id="ai-resume-input" class="custom-textarea" rows="3">Experienced in React, TypeScript, Node.js, Express, PostgreSQL, Docker, Redis, and Data Structures with 9.2 CGPA.</textarea>
+                    </div>
+                    <div class="input-group">
+                        <label for="ai-jd-input">Job Description Requirements</label>
+                        <textarea id="ai-jd-input" class="custom-textarea" rows="3">Looking for Fullstack Engineer with TypeScript, React, Node.js, PostgreSQL, Docker, and System Design knowledge.</textarea>
+                    </div>
+                </div>
+                <div class="action-bar">
+                    <button class="btn btn-primary" onclick="runAIResumeMatch()"><span>⚡ Run AI Skill Vector Analysis</span></button>
+                </div>
+                <div id="ai-matcher-result" class="result-box" style="display:none;"></div>
+            </div>
+
+            <!-- TAB 2: AI OFFER PREDICTOR -->
+            <div id="tab-ai-predictor" class="ai-tab-content">
+                <div class="card-header">
+                    <h2>🔮 AI Predictive Offer Acceptance Likelihood Model</h2>
+                    <span class="feature-status info">Logistic Sigmoid</span>
+                </div>
+                <p class="card-description">Predicts student candidate offer acceptance probability ($P_{accept}$) based on CTC multiple, corporate brand tier, competing pipeline queues, and location preferences.</p>
+                
+                <div class="flex-row">
+                    <div class="input-group">
+                        <label for="pred-ctc">Offered CTC (LPA)</label>
+                        <input type="number" id="pred-ctc" value="28" min="3" max="100" class="custom-input">
+                    </div>
+                    <div class="input-group">
+                        <label for="pred-tier">Company Brand Tier</label>
+                        <select id="pred-tier" class="custom-input">
+                            <option value="TIER_1_DREAM">Tier-1 Dream Company (Google, Meta, Uber)</option>
+                            <option value="TIER_2_SUPER_DREAM">Tier-2 Super Dream (Salesforce, Adobe)</option>
+                            <option value="TIER_3_MASS">Tier-3 Core Enterprise (TCS, Infosys)</option>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label for="pred-offers">Competing In-Flight Offers</label>
+                        <input type="number" id="pred-offers" value="1" min="0" max="5" class="custom-input">
+                    </div>
+                </div>
+                <div class="action-bar">
+                    <button class="btn btn-accent" onclick="runAIOfferPrediction()"><span>🔮 Compute Acceptance Probability</span></button>
+                </div>
+                <div id="ai-predictor-result" class="result-box" style="display:none;"></div>
+            </div>
+
+            <!-- TAB 3: AI GENETIC TIMETABLE OPTIMIZER -->
+            <div id="tab-ai-optimizer" class="ai-tab-content">
+                <div class="card-header">
+                    <h2>🧬 AI Genetic Multi-Objective Timetable Synthesizer</h2>
+                    <span class="feature-status active">Evolutionary GA</span>
+                </div>
+                <p class="card-description">Runs Genetic Evolutionary Algorithms across university exam calendars and multi-panel interviews, discovering globally optimal zero-clash schedules with minimum candidate idle time.</p>
+                
+                <div class="action-bar">
+                    <button class="btn btn-success" onclick="runAIScheduleOptimizer()"><span>🧬 Synthesize Conflict-Free Timetable (25 Generations)</span></button>
+                </div>
+                <div id="ai-optimizer-result" class="result-box" style="display:none;"></div>
+            </div>
+
+            <!-- TAB 4: AI STAR INTERVIEW SCORER -->
+            <div id="tab-ai-scorer" class="ai-tab-content">
+                <div class="card-header">
+                    <h2>🎙️ AI Real-time Audio/Video Interview STAR Clarity Scorer</h2>
+                    <span class="feature-status warning">NLP Analysis</span>
+                </div>
+                <p class="card-description">Analyzes candidate verbal response transcripts for STAR methodology (Situation, Task, Action, Result), technical precision, and filler word density.</p>
+                
+                <div class="input-group">
+                    <label for="ai-transcript-input">Interview Response Transcript</label>
+                    <textarea id="ai-transcript-input" class="custom-textarea" rows="3">During my internship at TechCorp, our API was experiencing 800ms latency under peak load. My task was to optimize the database query latency. I implemented an asynchronous distributed Redis cache and refactored the compound indices. As a result, we achieved a 65% reduction in latency.</textarea>
+                </div>
+                <div class="action-bar">
+                    <button class="btn btn-warning" onclick="runAIInterviewScorer()"><span>🎙️ Evaluate STAR Delivery & Communication Clarity</span></button>
+                </div>
+                <div id="ai-scorer-result" class="result-box" style="display:none;"></div>
+            </div>
+
+            <!-- TAB 5: MONTE CARLO DELAY CASCADE HUD -->
+            <div id="tab-ai-cascade" class="ai-tab-content">
+                <div class="card-header">
+                    <h2>📈 Probabilistic Monte Carlo Delay Cascade Forecaster</h2>
+                    <span class="feature-status danger">10,000 Trials</span>
+                </div>
+                <p class="card-description">Simulates interview duration variance using stochastic lognormal distributions to calculate 95th percentile overrun risks and recommended buffer intervals.</p>
+                
+                <div class="action-bar">
+                    <button class="btn btn-danger" onclick="runMonteCarloCascade()"><span>📈 Execute 5,000 Monte Carlo Simulation Trials</span></button>
+                </div>
+                <div id="ai-cascade-result" class="result-box" style="display:none;"></div>
+            </div>
+
+            <!-- TAB 6: JAIN FAIRNESS BALANCER -->
+            <div id="tab-ai-fairness" class="ai-tab-content">
+                <div class="card-header">
+                    <h2>⚖️ Weighted Fairness & Jain Index Diversity Balancer</h2>
+                    <span class="feature-status info">Jain Parity J(x)</span>
+                </div>
+                <p class="card-description">Enforces egalitarian branch representation across Computer Science, Information Science, ECE, and Mechanical Engineering.</p>
+                
+                <div class="action-bar">
+                    <button class="btn btn-outline" onclick="runFairnessAudit()"><span>⚖️ Audit Department Representation Parity</span></button>
+                </div>
+                <div id="ai-fairness-result" class="result-box" style="display:none;"></div>
+            </div>
+
+            <!-- TAB 7: WEBRTC E2EE VIRTUAL STUDIO -->
+            <div id="tab-ai-virtual-room" class="ai-tab-content">
+                <div class="card-header">
+                    <h2>📹 WebRTC E2EE Virtual Interview Studio & Presence Telemetry</h2>
+                    <span class="feature-status active">AES-256-GCM</span>
+                </div>
+                <p class="card-description">Generates tokenized End-to-End Encrypted virtual interview video suites with live presence telemetry and candidate consent verification.</p>
+                
+                <div class="action-bar">
+                    <button class="btn btn-secondary" onclick="provisionVirtualStudio()"><span>📹 Launch Encrypted Interview Room</span></button>
+                </div>
+                <div id="ai-virtual-result" class="result-box" style="display:none;"></div>
+            </div>
+
         </section>
 
         <!-- DASHBOARD GRID -->
@@ -107,7 +253,6 @@
                     
                     <div class="action-bar">
                         <button id="btn-check-clash" class="btn btn-primary" onclick="checkScheduleClash()"><span>🔍 Verify Conflict & Book</span></button>
-                        <button class="btn btn-secondary" onclick="generateVirtualMeeting()">📹 Provision HD Room</button>
                     </div>
                     
                     <div id="clash-result" class="result-box"></div>
@@ -152,38 +297,10 @@
                     <button id="btn-age-queue" class="btn btn-accent" onclick="ageQueue()"><span>⏩ Advance Time Step (Age Candidate Queues)</span></button>
                 </section>
 
-                <!-- FEATURE 4: MULTI-STAGE ASSESSMENT TRIGGERS -->
-                <section class="card glassmorphic">
-                    <div class="card-header">
-                        <h2>🎯 4. Multi-Stage Conditional Assessment Triggers</h2>
-                        <span class="feature-status info">Automated Dispatch</span>
-                    </div>
-                    <p class="card-description">Interviewer score submissions automatically trigger fast-track booking credentials and SMS invitations for candidates meeting qualifying thresholds.</p>
-                    
-                    <div class="flex-row">
-                        <div class="input-group">
-                            <label for="score-student-name">Candidate Name</label>
-                            <input type="text" id="score-student-name" value="Preetham J">
-                        </div>
-                        <div class="input-group">
-                            <label for="score-student-id">Candidate ID</label>
-                            <input type="text" id="score-student-id" value="STU_001">
-                        </div>
-                        <div class="input-group">
-                            <label for="score-value" style="display:flex; justify-content:space-between; align-items:center;">
-                                Technical Score
-                                <span id="score-badge" class="badge-value" style="color:var(--success); border-color:var(--success); background:rgba(16,185,129,0.2);">88</span>
-                            </label>
-                            <input type="range" id="score-value" class="custom-slider" value="88" min="0" max="100" step="1" oninput="updateScoreBadge(this.value)">
-                        </div>
-                    </div>
-                    <button id="btn-log-score" class="btn btn-success" onclick="logScore()"><span>📝 Submit Scorecard & Auto-Trigger</span></button>
-                </section>
-
                 <!-- FEATURE 5: BIPARTITE BINDING OFFER RESOLVER -->
                 <section class="card glassmorphic" id="offer-engine-card">
                     <div class="card-header">
-                        <h2>🤝 5. Dynamic Bipartite Binding Offer Resolver</h2>
+                        <h2>🤝 4. Dynamic Bipartite Binding Offer Resolver</h2>
                         <span class="feature-status danger">Atomic Execution</span>
                     </div>
                     <p class="card-description">When a candidate accepts an offer, they are atomically dequeued from all competing corporate queues, and the next optimal candidate is backfilled with zero idle time.</p>

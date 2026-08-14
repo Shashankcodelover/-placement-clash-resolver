@@ -366,15 +366,52 @@ app.post('/api/v2/ir11/scorecard/calibrate', authMiddleware(['ADMIN', 'PANEL']),
     }
 });
 
-app.post('/api/v2/ir11/audit/tenant-isolation', authMiddleware(['ADMIN']), (req, res) => {
+// --- IR-12 AI ENGINE IMPORTS ---
+const aiResumeMatcher = require('./aiResumeMatcher');
+const aiOfferPredictor = require('./aiOfferPredictor');
+const aiScheduleOptimizer = require('./aiScheduleOptimizer');
+const aiInterviewScorer = require('./aiInterviewScorer');
+
+// --- IR-12 AI REST ENDPOINTS ---
+app.post('/api/v2/ir12/ai/resume-matcher', authMiddleware(['ADMIN', 'RECRUITER']), (req, res) => {
     try {
-        const { tenantARecords, tenantBRecords, tenantAId, tenantBId } = req.body;
-        const result = tenantBenchmarkGovernor.verifyTenantIsolation(tenantARecords || [], tenantBRecords || [], tenantAId, tenantBId);
+        const { resumeText, jobDescriptionText, candidateCgpa } = req.body;
+        const result = aiResumeMatcher.evaluateCandidateFit(resumeText || '', jobDescriptionText || '', candidateCgpa || 8.5);
         res.json({ success: true, result });
     } catch (e) {
         res.status(500).json({ error: e.message });
     }
 });
+
+app.post('/api/v2/ir12/ai/offer-predictor', authMiddleware(['ADMIN', 'RECRUITER']), (req, res) => {
+    try {
+        const result = aiOfferPredictor.predictAcceptanceLikelihood(req.body || {});
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+app.post('/api/v2/ir12/ai/schedule-optimizer', authMiddleware(['ADMIN']), (req, res) => {
+    try {
+        const { interviewRequests, academicBlocks, availableSlots, populationSize, generations } = req.body;
+        const result = aiScheduleOptimizer.optimizeSchedule(interviewRequests || [], academicBlocks || [], availableSlots || [], populationSize || 30, generations || 20);
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+app.post('/api/v2/ir12/ai/interview-scorer', authMiddleware(['ADMIN', 'PANEL']), (req, res) => {
+    try {
+        const { transcriptText, domain } = req.body;
+        const result = aiInterviewScorer.evaluateTranscript(transcriptText || '', domain || 'SYSTEMS');
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
 
 
 app.post('/api/reset', authMiddleware(['ADMIN']), async (req, res) => {
