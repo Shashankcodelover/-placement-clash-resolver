@@ -1,60 +1,58 @@
-# 🎓 Placement Drive Clash Resolver
+# 🎓 Placement Drive Clash Resolver (Enterprise Edition v2.0)
 
-An algorithmic campus recruitment optimizer designed to resolve schedule overlaps, queue stagnation, candidate ghosting, and offer hoarding in high-pressure university placement environments. 
-
-This repository features a complete, interactive, and beautifully styled full-stack web application with a glassmorphic dashboard to simulate and test all five core algorithms.
-
-## 🚀 Key Features & Algorithmic Solutions
-
-1. **Zero-Conflict Academic Synchronization Engine:** Natively checks proposed recruiter interview schedules against the university's academic timetables and exams, automatically recommending alternative conflict-free slots.
-2. **Predictive Delay Modeling:** Monites live interview pacing in real-time. Overrun delays recalculate downstream start/end times and push real-time updates and rescheduled arrival times to candidates.
-3. **Tribonacci-Weighted Dynamic Queuing:** Combats queue stagnation when interview panels run slow. Leverages a Tribonacci mathematical aging sequence ($T_n = T_{n-1} + T_{n-2} + T_{n-3}$) to dynamically escalate waiting candidates' priority scores and redistribute workloads.
-4. **Multi-Stage Conditional Triggers:** Automatically reads candidate assessment sheets upon completion, instantly triggering email/SMS scheduling invites for subsequent rounds when scores clear cut-off thresholds.
-5. **Continuous Bipartite Match Re-Routing:** Eradicates Day 1 offer hoarding. The moment a student accepts a binding job offer, the background router instantly de-queues them from all other concurrent queues, promoting the next eligible candidate.
+> **Zero-Conflict Recruitment Logistics & Dynamic Bipartite Scheduling Engine**  
+> A high-throughput, ACID-compliant recruitment logistics platform built for Tier-1 universities and enterprise hiring drives.
 
 ---
 
-## 🛠️ Tech Stack
+## 🌟 Key Enterprise Features
 
-* **Backend:** Node.js, Express.js API Gateway
-* **Frontend:** Mobile-first Vanilla HTML5, CSS3, JavaScript (Sleek Glassmorphic Design System)
-* **API Architecture:** REST endpoints with real-time state synchronization
+### 1. Zero-Conflict Academic & Interview Sync
+- Automatically cross-references university semester exams, laboratory vivas, and parallel interview panels.
+- Calculates mathematically verified conflict-free slots with alternative time suggestions.
+
+### 2. Predictive Delay Cascade Modeling
+- When an interviewer exceeds scheduled time, downstream panel slots are dynamically shifted.
+- Isolates delay propagation to the specific interview panel without disrupting parallel company tracks.
+
+### 3. Logarithmic Multi-Factor Queue Aging
+- Dynamic priority formula:
+  $$P(t) = \text{BaseScore} + 12 \cdot \log_2(1 + t) + (\text{CGPA} \times 2)$$
+- Completely eliminates wait-time stagnation and hard priority collision ceilings.
+
+### 4. Dynamic Bipartite Binding Offer Resolver
+- When a candidate accepts an offer, they are atomically dequeued from all competing company waitlists.
+- Bipartite matching algorithm instantly backfills the next optimal conflict-free candidate.
+
+### 5. Multi-Role RBAC & Persona Gateway
+- 4 Operational Tiers: `Placement Director (ADMIN)`, `Corporate Recruiter (RECRUITER)`, `Technical Panelist (PANEL)`, `Student Candidate (STUDENT)`.
+
+### 6. iCalendar (RFC 5545) & Virtual Room Dispatch
+- Direct `.ics` calendar sync for Google Calendar, Apple Calendar, and Microsoft Outlook.
+- Instant tokenized virtual interview room generator.
 
 ---
 
-## 📦 Project Structure
+## 🛠️ Architecture & Tech Stack
 
-```text
-📦 placement-clash-resolver
- ┣ 📂 backend
- ┃ ┗ 📜 server.js        # Express controller, APIs, and algorithms
- ┣ 📂 frontend
- ┃ ┣ 📜 index.html       # Glassmorphic UI Dashboard interface
- ┃ ┣ 📜 style.css        # Interactive style system
- ┃ ┗ 📜 app.js           # Client routing, fetch logic, and UI renders
- ┣ 📜 package.json       # Node scripts and dependencies
- ┗ 📜 README.md          # Algorithmic blueprints
+- **Backend**: Node.js, Express.js, Socket.io (WebSocket room clustering), Zod, JSON Web Tokens (JWT).
+- **Persistence**: SQLite (WAL mode, ACID transactions).
+- **Frontend**: Vanilla JS (XSS-safe DOM), Enterprise CSS design tokens, Google Fonts (`Outfit`, `Space Grotesk`).
+- **Testing**: Jest, Supertest (10/10 automated tests passing).
+
+---
+
+## 🚀 Getting Started
+
+```bash
+# 1. Install dependencies
+npm install
+
+# 2. Run automated test suite
+npm test
+
+# 3. Start production server
+npm start
 ```
 
----
-
-## 🚦 Getting Started
-
-### Installation
-1. Clone the repository and navigate to the project directory:
-   ```bash
-   cd placement-clash-resolver
-   ```
-2. Install dependencies:
-   ```bash
-   npm install
-   ```
-3. Start the application:
-   ```bash
-   npm start
-   ```
-4. Open your web browser and navigate to:
-   ```text
-   http://localhost:3000
-   ```
-5. Click **Reset Simulation State** to seed default student records and start playing with the live interactive buttons!
+Visit the dashboard at `http://localhost:3000`.

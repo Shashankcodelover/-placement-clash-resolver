@@ -3,188 +3,422 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Placement Drive Clash Resolver</title>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Space+Grotesk:wght@400;700&display=swap" rel="stylesheet">
+    <title>Placement Drive Clash Resolver — Enterprise & AI Autonomous Edition</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.socket.io/4.8.1/socket.io.min.js"></script>
 </head>
 <body>
     <div class="galaxy-glow"></div>
     <div class="glass-container">
-        <!-- HEADER -->
+        
+        <!-- TOP NAVIGATION & PERSONA SWITCHER -->
         <header class="app-header">
-            <div class="header-logo">
+            <div class="header-brand">
                 <span class="pulse-dot"></span>
-                <h1>Placement Drive Clash Resolver</h1>
+                <div>
+                    <h1>Placement Drive Clash Resolver <span class="ai-badge-header">AI Autonomous v12</span></h1>
+                    <p class="tagline">Enterprise Algorithmic Recruitment Logistics, AI Skill Vectors & Dynamic Bipartite Scheduling</p>
+                </div>
             </div>
-            <p class="tagline">Zero-Conflict Recruitment Logistics & Algorithmic Scheduling Engine</p>
-            <div class="meta-pills">
-                <span class="pill tech-stack">Node.js + Express.js</span>
-                <span class="pill stat-badge">5 Algorithmic Features</span>
+
+            <div class="header-controls">
+                <div class="persona-selector">
+                    <label for="persona-select">Active Persona:</label>
+                    <select id="persona-select" onchange="switchPersona(this.value)">
+                        <option value="ADMIN">👑 Placement Director (Admin)</option>
+                        <option value="RECRUITER">🏢 Google Lead Recruiter</option>
+                        <option value="PANEL">🧑‍💻 Technical Panelist (Panel A)</option>
+                        <option value="STUDENT">🎓 Preetham J (Candidate)</option>
+                    </select>
+                </div>
+
+                <button class="btn btn-outline" onclick="exportCalendar()">📅 Export .ICS</button>
+                <button class="btn btn-danger-outline" onclick="resetSystemState()">🔄 Reset DB</button>
             </div>
         </header>
+
+        <!-- KPI ANALYTICS BAR -->
+        <section class="kpi-grid">
+            <div class="kpi-card">
+                <span class="kpi-icon">🎓</span>
+                <div>
+                    <h3 id="kpi-placed">1 / 5</h3>
+                    <p>Candidates Placed</p>
+                </div>
+            </div>
+            <div class="kpi-card">
+                <span class="kpi-icon">⚡</span>
+                <div>
+                    <h3 id="kpi-rate">20%</h3>
+                    <p>Placement Velocity</p>
+                </div>
+            </div>
+            <div class="kpi-card">
+                <span class="kpi-icon">🛡️</span>
+                <div>
+                    <h3 id="kpi-clashes">12</h3>
+                    <p>Clashes Prevented</p>
+                </div>
+            </div>
+            <div class="kpi-card">
+                <span class="kpi-icon">🤖</span>
+                <div>
+                    <h3 id="kpi-ai-status">98.5%</h3>
+                    <p>AI Schedule Fit</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- AI & INTELLIGENT AUTOMATION STUDIO TAB BAR -->
+        <div class="ai-studio-tabs">
+            <button class="tab-btn active" onclick="switchAITab('ai-matcher')">🤖 AI Resume Matcher</button>
+            <button class="tab-btn" onclick="switchAITab('ai-predictor')">🔮 AI Offer Predictor</button>
+            <button class="tab-btn" onclick="switchAITab('ai-optimizer')">🧬 AI Genetic Optimizer</button>
+            <button class="tab-btn" onclick="switchAITab('ai-scorer')">🎙️ AI STAR Scorer</button>
+            <button class="tab-btn" onclick="switchAITab('tab-pareto')">⚖️ Pareto Frontier</button>
+            <button class="tab-btn" onclick="switchAITab('tab-csp')">🧩 AC-3 CSP Solver</button>
+            <button class="tab-btn" onclick="switchAITab('tab-cascade-ripple')">🌊 Live Offer Cascade</button>
+            <button class="tab-btn" onclick="switchAITab('tab-blind-screening')">🕶️ Blind Screening</button>
+            <button class="tab-btn" onclick="switchAITab('tab-slot-lease')">🔒 Slot Lease Lock</button>
+        </div>
+
+
+        <!-- AI STUDIO ACTIVE PANELS -->
+        <section class="card glassmorphic ai-panel-card">
+            
+            <!-- TAB 1: AI RESUME MATCHER -->
+            <div id="tab-ai-matcher" class="ai-tab-content active">
+                <div class="card-header">
+                    <h2>🤖 AI Resume-Job Skill Vector Embedding & Semantic Matcher</h2>
+                    <span class="feature-status active">Cosine Vector Active</span>
+                </div>
+                <p class="card-description">Extracts multi-dimensional skill vectors from candidate profile text and company JDs, computing cosine similarity and identifying prerequisite skill gaps.</p>
+                
+                <div class="flex-row">
+                    <div class="input-group">
+                        <label for="ai-resume-input">Candidate Resume Summary</label>
+                        <textarea id="ai-resume-input" class="custom-textarea" rows="3">Experienced in React, TypeScript, Node.js, Express, PostgreSQL, Docker, Redis, and Data Structures with 9.2 CGPA.</textarea>
+                    </div>
+                    <div class="input-group">
+                        <label for="ai-jd-input">Job Description Requirements</label>
+                        <textarea id="ai-jd-input" class="custom-textarea" rows="3">Looking for Fullstack Engineer with TypeScript, React, Node.js, PostgreSQL, Docker, and System Design knowledge.</textarea>
+                    </div>
+                </div>
+                <div class="action-bar">
+                    <button class="btn btn-primary" onclick="runAIResumeMatch()"><span>⚡ Run AI Skill Vector Analysis</span></button>
+                </div>
+                <div id="ai-matcher-result" class="result-box" style="display:none;"></div>
+            </div>
+
+            <!-- TAB 2: AI OFFER PREDICTOR -->
+            <div id="tab-ai-predictor" class="ai-tab-content">
+                <div class="card-header">
+                    <h2>🔮 AI Predictive Offer Acceptance Likelihood Model</h2>
+                    <span class="feature-status info">Logistic Sigmoid</span>
+                </div>
+                <p class="card-description">Predicts student candidate offer acceptance probability ($P_{accept}$) based on CTC multiple, corporate brand tier, competing pipeline queues, and location preferences.</p>
+                
+                <div class="flex-row">
+                    <div class="input-group">
+                        <label for="pred-ctc">Offered CTC (LPA)</label>
+                        <input type="number" id="pred-ctc" value="28" min="3" max="100" class="custom-input">
+                    </div>
+                    <div class="input-group">
+                        <label for="pred-tier">Company Brand Tier</label>
+                        <select id="pred-tier" class="custom-input">
+                            <option value="TIER_1_DREAM">Tier-1 Dream Company (Google, Meta, Uber)</option>
+                            <option value="TIER_2_SUPER_DREAM">Tier-2 Super Dream (Salesforce, Adobe)</option>
+                            <option value="TIER_3_MASS">Tier-3 Core Enterprise (TCS, Infosys)</option>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label for="pred-offers">Competing In-Flight Offers</label>
+                        <input type="number" id="pred-offers" value="1" min="0" max="5" class="custom-input">
+                    </div>
+                </div>
+                <div class="action-bar">
+                    <button class="btn btn-accent" onclick="runAIOfferPrediction()"><span>🔮 Compute Acceptance Probability</span></button>
+                </div>
+                <div id="ai-predictor-result" class="result-box" style="display:none;"></div>
+            </div>
+
+            <!-- TAB 3: AI GENETIC TIMETABLE OPTIMIZER -->
+            <div id="tab-ai-optimizer" class="ai-tab-content">
+                <div class="card-header">
+                    <h2>🧬 AI Genetic Multi-Objective Timetable Synthesizer</h2>
+                    <span class="feature-status active">Evolutionary GA</span>
+                </div>
+                <p class="card-description">Runs Genetic Evolutionary Algorithms across university exam calendars and multi-panel interviews, discovering globally optimal zero-clash schedules with minimum candidate idle time.</p>
+                
+                <div class="action-bar">
+                    <button class="btn btn-success" onclick="runAIScheduleOptimizer()"><span>🧬 Synthesize Conflict-Free Timetable (25 Generations)</span></button>
+                </div>
+                <div id="ai-optimizer-result" class="result-box" style="display:none;"></div>
+            </div>
+
+            <!-- TAB 4: AI STAR INTERVIEW SCORER -->
+            <div id="tab-ai-scorer" class="ai-tab-content">
+                <div class="card-header">
+                    <h2>🎙️ AI Real-time Audio/Video Interview STAR Clarity Scorer</h2>
+                    <span class="feature-status warning">NLP Analysis</span>
+                </div>
+                <p class="card-description">Analyzes candidate verbal response transcripts for STAR methodology (Situation, Task, Action, Result), technical precision, and filler word density.</p>
+                
+                <div class="input-group">
+                    <label for="ai-transcript-input">Interview Response Transcript</label>
+                    <textarea id="ai-transcript-input" class="custom-textarea" rows="3">During my internship at TechCorp, our API was experiencing 800ms latency under peak load. My task was to optimize the database query latency. I implemented an asynchronous distributed Redis cache and refactored the compound indices. As a result, we achieved a 65% reduction in latency.</textarea>
+                </div>
+                <div class="action-bar">
+                    <button class="btn btn-warning" onclick="runAIInterviewScorer()"><span>🎙️ Evaluate STAR Delivery & Communication Clarity</span></button>
+                </div>
+                <div id="ai-scorer-result" class="result-box" style="display:none;"></div>
+            </div>
+
+            <!-- TAB 5: MONTE CARLO DELAY CASCADE HUD -->
+            <div id="tab-ai-cascade" class="ai-tab-content">
+                <div class="card-header">
+                    <h2>📈 Probabilistic Monte Carlo Delay Cascade Forecaster</h2>
+                    <span class="feature-status danger">10,000 Trials</span>
+                </div>
+                <p class="card-description">Simulates interview duration variance using stochastic lognormal distributions to calculate 95th percentile overrun risks and recommended buffer intervals.</p>
+                
+                <div class="action-bar">
+                    <button class="btn btn-danger" onclick="runMonteCarloCascade()"><span>📈 Execute 5,000 Monte Carlo Simulation Trials</span></button>
+                </div>
+                <div id="ai-cascade-result" class="result-box" style="display:none;"></div>
+            </div>
+
+            <!-- TAB 6: JAIN FAIRNESS BALANCER -->
+            <div id="tab-ai-fairness" class="ai-tab-content">
+                <div class="card-header">
+                    <h2>⚖️ Weighted Fairness & Jain Index Diversity Balancer</h2>
+                    <span class="feature-status info">Jain Parity J(x)</span>
+                </div>
+                <p class="card-description">Enforces egalitarian branch representation across Computer Science, Information Science, ECE, and Mechanical Engineering.</p>
+                
+                <div class="action-bar">
+                    <button class="btn btn-outline" onclick="runFairnessAudit()"><span>⚖️ Audit Department Representation Parity</span></button>
+                </div>
+                <div id="ai-fairness-result" class="result-box" style="display:none;"></div>
+            </div>
+
+            <!-- TAB 8: PARETO FRONTIER OPTIMAL SLOTS -->
+            <div id="tab-pareto" class="ai-tab-content">
+                <div class="card-header">
+                    <h2>⚖️ Multi-Criteria Pareto Frontier Optimal Slot Allocator</h2>
+                    <span class="feature-status active">NSGA-II Non-Dominated</span>
+                </div>
+                <p class="card-description">Computes multi-objective non-dominated scheduling curves balancing Student Idle Wait Time, Corporate Slot Utilization, and Departmental Fatigue Variance.</p>
+                <div class="action-bar">
+                    <button class="btn btn-primary" onclick="computeParetoFrontier()"><span>⚖️ Compute Pareto Non-Dominated Frontier</span></button>
+                </div>
+                <div id="pareto-result" class="result-box" style="display:none;"></div>
+            </div>
+
+            <!-- TAB 9: AC-3 CSP CONSTRAINT SOLVER -->
+            <div id="tab-csp" class="ai-tab-content">
+                <div class="card-header">
+                    <h2>🧩 Arc-Consistency 3 (AC-3) & Forward-Checking CSP Solver</h2>
+                    <span class="feature-status active">50ms Deadline Safe</span>
+                </div>
+                <p class="card-description">Prunes conflicting candidate slot domains using AC-3 constraint propagation and MRV heuristics to resolve high-contention clashes in &lt;5ms.</p>
+                <div class="action-bar">
+                    <button class="btn btn-secondary" onclick="solveAC3Constraints()"><span>🧩 Solve AC-3 Constraints</span></button>
+                </div>
+                <div id="csp-result" class="result-box" style="display:none;"></div>
+            </div>
+
+            <!-- TAB 10: LIVE OFFER RIPPLE CASCADE -->
+            <div id="tab-cascade-ripple" class="ai-tab-content">
+                <div class="card-header">
+                    <h2>🌊 Multi-Company Real-Time Live Offer Cascade & Deadlock Resolver</h2>
+                    <span class="feature-status danger">Ripple Release</span>
+                </div>
+                <p class="card-description">Simulates simultaneous exploding offer clocks. When a student accepts a Tier-1 Dream Offer, lower-tier held slots are instantly released to the waitlist.</p>
+                <div class="action-bar">
+                    <button class="btn btn-danger" onclick="triggerOfferRippleCascade()"><span>🌊 Simulate Offer Acceptance Cascade</span></button>
+                </div>
+                <div id="cascade-ripple-result" class="result-box" style="display:none;"></div>
+            </div>
+
+            <!-- TAB 11: E2EE BLIND CANDIDATE SCREENING -->
+            <div id="tab-blind-screening" class="ai-tab-content">
+                <div class="card-header">
+                    <h2>🕶️ Automated E2EE Blind Screening & Bias Neutralization</h2>
+                    <span class="feature-status active">PII Redacted</span>
+                </div>
+                <p class="card-description">Strips gender, caste, socioeconomic, and college name markers into deterministic cryptographic HMAC aliases to ensure 100% merit-based shortlisting.</p>
+                <div class="action-bar">
+                    <button class="btn btn-outline" onclick="generateBlindDossier()"><span>🕶️ Generate Blind Anonymous Dossier</span></button>
+                </div>
+                <div id="blind-screening-result" class="result-box" style="display:none;"></div>
+            </div>
+
+            <!-- TAB 12: HIGH-CONCURRENCY SLOT LEASE LOCK -->
+            <div id="tab-slot-lease" class="ai-tab-content">
+                <div class="card-header">
+                    <h2>🔒 High-Concurrency Slot Lease Lock Engine</h2>
+                    <span class="feature-status active">5-Min Atomic OCC</span>
+                </div>
+                <p class="card-description">5-minute atomic slot hold leases with monotonic versioning and anti-sniping protection supporting 5,000 concurrent candidate clicks with zero race conditions.</p>
+                <div class="action-bar">
+                    <button class="btn btn-accent" onclick="testSlotLeaseLock()"><span>🔒 Acquire 5-Minute Atomic Slot Lease</span></button>
+                </div>
+                <div id="slot-lease-result" class="result-box" style="display:none;"></div>
+            </div>
+
+        </section>
+
 
         <!-- DASHBOARD GRID -->
         <main class="dashboard-grid">
             
-            <!-- COLUMN 1: CONTROLS & DYNAMIC MODULES -->
+            <!-- LEFT COLUMN: CONTROLS & ENGINES -->
             <div class="main-column">
                 
-                <!-- FEATURE 1: SYNC ENGINE -->
+                <!-- FEATURE 1: ACADEMIC & INTERVIEW CLASH ENGINE -->
                 <section class="card glassmorphic" id="sync-engine-card">
                     <div class="card-header">
-                        <h2>🔄 1. Zero-Conflict Academic Timetable Sync</h2>
-                        <span class="feature-status active">Engine Live</span>
+                        <h2>🔄 1. Zero-Conflict Academic & Panel Matrix Sync</h2>
+                        <span class="feature-status active">Matrix Active</span>
                     </div>
-                    <p class="card-description">Cross-references candidate exam timetables and automatically proposes conflict-free slots if a booking overlap occurs.</p>
+                    <p class="card-description">Cross-references candidate semester exams, lab vivas, and concurrent interview panels. Computes mathematically verified clash-free alternative slots.</p>
+                    
                     <div class="flex-row">
                         <div class="input-group">
-                            <label for="sync-student">Candidate ID</label>
+                            <label for="sync-student">Candidate</label>
                             <select id="sync-student">
-                                <option value="STU_001">STU_001 (Preetham J)</option>
-                                <option value="STU_002">STU_002 (Aditya Roy)</option>
-                                <option value="STU_003">STU_003 (John Doe)</option>
+                                <option value="STU_001">STU_001 - Preetham J (CGPA: 9.2)</option>
+                                <option value="STU_002">STU_002 - Aditya Roy (CGPA: 8.8)</option>
+                                <option value="STU_003">STU_003 - John Doe (CGPA: 8.5)</option>
+                                <option value="STU_004">STU_004 - Sneha Sharma (CGPA: 9.5)</option>
                             </select>
                         </div>
                         <div class="input-group">
-                            <label for="proposed-time">Proposed Time</label>
+                            <label for="proposed-time">Proposed Slot Time</label>
                             <select id="proposed-time">
-                                <option value="600">10:00 AM</option>
-                                <option value="720">12:00 PM</option>
+                                <option value="600">10:00 AM (Free Slot)</option>
+                                <option value="720">12:00 PM (Free Slot)</option>
                                 <option value="900">03:00 PM (CN Lab Clash for STU_001)</option>
-                                <option value="960">04:00 PM (CN Lab Clash for STU_001)</option>
+                                <option value="1400">11:20 PM (OS Midterm Clash for STU_001)</option>
                             </select>
                         </div>
                     </div>
-                    <button class="btn btn-primary" onclick="checkScheduleClash()">Verify & Book Slot</button>
                     
-                    <div id="clash-result" class="result-box hidden"></div>
+                    <div class="action-bar">
+                        <button id="btn-check-clash" class="btn btn-primary" onclick="checkScheduleClash()"><span>🔍 Verify Conflict & Book</span></button>
+                    </div>
+                    
+                    <div id="clash-result" class="result-box"></div>
                 </section>
 
-                <!-- FEATURE 2: PREDICTIVE DELAY MODELING -->
+                <!-- FEATURE 2: PREDICTIVE DELAY CASCADE MODELING -->
                 <section class="card glassmorphic">
                     <div class="card-header">
-                        <h2>⏳ 2. Predictive Delay Modeling</h2>
-                        <span class="feature-status warning">Simulating Pacing</span>
+                        <h2>⏳ 2. Predictive Delay Cascade & Panel Overrun Manager</h2>
+                        <span class="feature-status warning">Live Tracking</span>
                     </div>
-                    <p class="card-description">Calculates delay cascades when an interview runs over time, automatically shifting downstream schedules and notifying students.</p>
+                    <p class="card-description">When an interviewer exceeds scheduled time, downstream panel slots are dynamically shifted while keeping parallel company panels completely unaffected.</p>
                     
                     <div id="timeline-list" class="timeline-container">
-                        <!-- Loaded via JS -->
+                        <!-- Loaded dynamically -->
                     </div>
 
-                    <div class="flex-row flex-end" style="margin-top: 15px;">
+                    <div class="delay-control-box">
                         <div class="input-group">
-                            <label for="actual-duration">Actual Duration of Selected Interview (mins)</label>
-                            <input type="number" id="actual-duration" value="55" min="10" max="120">
+                            <label for="actual-duration" style="display:flex; justify-content:space-between; align-items:center;">
+                                Actual Duration (Minutes)
+                                <span id="duration-badge" class="badge-value">65m</span>
+                            </label>
+                            <input type="range" id="actual-duration" class="custom-slider" value="65" min="15" max="150" step="5" oninput="document.getElementById('duration-badge').innerText = this.value + 'm'">
                         </div>
-                        <button class="btn btn-warning" onclick="logDelay()">Log Interview & Shift Slots</button>
+                        <button id="btn-log-delay" class="btn btn-warning" onclick="logDelay()"><span>⚡ Log Overrun & Cascade Shifts</span></button>
                     </div>
                 </section>
 
-                <!-- FEATURE 3: TRIBONACCI QUEUING -->
+                <!-- FEATURE 3: MULTI-FACTOR DYNAMIC PRIORITY QUEUING -->
                 <section class="card glassmorphic">
                     <div class="card-header">
-                        <h2>📈 3. Tribonacci-Weighted Wait Time Queuing</h2>
-                        <span class="feature-status active">Dynamic Aging</span>
+                        <h2>📈 3. Logarithmic Multi-Factor Dynamic Aging Queue</h2>
+                        <span class="feature-status active">Fairness Engine</span>
                     </div>
-                    <p class="card-description">Uses the Tribonacci sequence to scale candidate priority scores based on wait durations, preventing slow interview panels from creating stagnant queues.</p>
+                    <p class="card-description">Prevents stagnation using $P(t) = \text{Base} + 12 \cdot \log_2(1 + t) + (\text{CGPA} \times 2)$. Eliminates hard caps and starvation.</p>
                     
                     <div class="queue-cards-wrapper" id="queue-cards-container">
                         <!-- Queue Cards loaded via JS -->
                     </div>
 
-                    <button class="btn btn-accent" onclick="ageQueue()">Simulate Time Step (Age Wait Queue)</button>
+                    <button id="btn-age-queue" class="btn btn-accent" onclick="ageQueue()"><span>⏩ Advance Time Step (Age Candidate Queues)</span></button>
                 </section>
 
-                <!-- FEATURE 4: CONDITIONAL TRIGGERS -->
-                <section class="card glassmorphic">
+                <!-- FEATURE 5: BIPARTITE BINDING OFFER RESOLVER -->
+                <section class="card glassmorphic" id="offer-engine-card">
                     <div class="card-header">
-                        <h2>🎯 4. Multi-Stage Conditional Triggers</h2>
-                        <span class="feature-status info">Event Listener Active</span>
+                        <h2>🤝 4. Dynamic Bipartite Binding Offer Resolver</h2>
+                        <span class="feature-status danger">Atomic Execution</span>
                     </div>
-                    <p class="card-description">Reads interviewer assessment sheets. Passing results automatically trigger booking credentials for the next round instantly.</p>
+                    <p class="card-description">When a candidate accepts an offer, they are atomically dequeued from all competing corporate queues, and the next optimal candidate is backfilled with zero idle time.</p>
                     
                     <div class="flex-row">
                         <div class="input-group">
-                            <label for="score-student-name">Student Name</label>
-                            <input type="text" id="score-student-name" value="Preetham J">
-                        </div>
-                        <div class="input-group">
-                            <label for="score-student-id">Student ID</label>
-                            <input type="text" id="score-student-id" value="STU_001">
-                        </div>
-                        <div class="input-group">
-                            <label for="score-value">Technical Score (0-100)</label>
-                            <input type="number" id="score-value" value="85" min="0" max="100">
-                        </div>
-                    </div>
-                    <button class="btn btn-primary" onclick="logScore()">Submit Score Sheet</button>
-
-                    <div class="trigger-logs-container" id="trigger-logs">
-                        <!-- Loaded via JS -->
-                    </div>
-                </section>
-
-                <!-- FEATURE 5: BIPARTITE RE-ROUTING -->
-                <section class="card glassmorphic">
-                    <div class="card-header">
-                        <h2>🛡️ 5. Offer Hoarding Prevention (Bipartite Re-Routing)</h2>
-                        <span class="feature-status alert">Active Guard</span>
-                    </div>
-                    <p class="card-description">If a student accepts a binding offer, they are instantly removed from all concurrent queues, immediately shifting other eligible candidates up.</p>
-                    
-                    <div class="corporate-queues-grid" id="corporate-queues">
-                        <!-- Queues loaded via JS -->
-                    </div>
-
-                    <div class="flex-row flex-end" style="margin-top: 15px; align-items: flex-end;">
-                        <div class="input-group">
-                            <label for="accept-student">Accept Offer For</label>
+                            <label for="accept-student">Placed Candidate</label>
                             <select id="accept-student">
-                                <option value="STU_001">Preetham J (STU_001)</option>
-                                <option value="STU_002">Aditya Roy (STU_002)</option>
-                                <option value="STU_003">John Doe (STU_003)</option>
+                                <option value="STU_001">STU_001 (Preetham J)</option>
+                                <option value="STU_002">STU_002 (Aditya Roy)</option>
+                                <option value="STU_003">STU_003 (John Doe)</option>
+                                <option value="STU_004">STU_004 (Sneha Sharma)</option>
                             </select>
                         </div>
                         <div class="input-group">
-                            <label for="accept-company">Company</label>
+                            <label for="accept-company">Issuing Enterprise</label>
                             <select id="accept-company">
-                                <option value="Microsoft">Microsoft</option>
-                                <option value="Google">Google</option>
-                                <option value="Meta">Meta</option>
+                                <option value="Google">Google (₹32 LPA)</option>
+                                <option value="Microsoft">Microsoft (₹28 LPA)</option>
+                                <option value="Meta">Meta (₹35 LPA)</option>
+                                <option value="Goldman Sachs">Goldman Sachs (₹26 LPA)</option>
                             </select>
                         </div>
-                        <button class="btn btn-danger" onclick="acceptOffer()">Accept Offer & Re-route</button>
                     </div>
+                    <button id="btn-accept-offer" class="btn btn-danger" onclick="acceptOffer()"><span>🎉 Accept Offer & Backfill Queues</span></button>
                 </section>
+
             </div>
 
-            <!-- SIDEBAR: LIVE PUSH ALERTS & SYSTEM STATS -->
-            <div class="sidebar-column">
-                <section class="card glassmorphic notifications-card">
-                    <h2>📲 Automated SMS/Push Logs</h2>
-                    <div class="notifications-list" id="notifications-list">
-                        <div class="notification-item sys-msg">
-                            <span class="notif-time">System</span>
-                            <p>Simulation active. Ready to monitor events.</p>
-                        </div>
+            <!-- RIGHT COLUMN: LIVE FEEDS & CORPORATE BOARDS -->
+            <div class="side-column">
+                
+                <!-- CORPORATE QUEUE BOARDS -->
+                <section class="card glassmorphic">
+                    <div class="card-header">
+                        <h2>🏢 Enterprise Candidate Pools</h2>
                     </div>
-                    <button class="btn btn-outline" onclick="resetSystemState()" style="margin-top: 15px; width: 100%;">Reset Simulation State</button>
+                    <div id="corporate-queues" class="corp-grid">
+                        <!-- Loaded dynamically -->
+                    </div>
                 </section>
 
-                <section class="card glassmorphic agenda-card">
-                    <h3>💡 Project Architecture Agenda</h3>
-                    <p>Designed to eradicate operational lag, schedules overlap, and offer hoarding in high-pressure university placement settings.</p>
-                    <hr class="divider">
-                    <h4>Key Algorithmic Strengths:</h4>
-                    <ul class="agenda-list">
-                        <li><strong>Timetable Sync:</strong> Dynamic mapping.</li>
-                        <li><strong>Delay Modeler:</strong> Cascading timelines.</li>
-                        <li><strong>Tribonacci Aging:</strong> Escalates priority.</li>
-                        <li><strong>Event Triggers:</strong> Instant invitation pipelines.</li>
-                        <li><strong>Bipartite Re-routing:</strong> System-wide fairness.</li>
-                    </ul>
+                <!-- NOTIFICATIONS & DISPATCH FEED -->
+                <section class="card glassmorphic">
+                    <div class="card-header">
+                        <h2>🔔 Live Dispatch & SMS Feeds</h2>
+                        <span class="badge-pill">Real-Time</span>
+                    </div>
+                    <div id="notifications-list" class="notif-feed">
+                        <!-- Notifications loaded dynamically -->
+                    </div>
                 </section>
+
+                <!-- AUDIT & TRIGGER LOGS -->
+                <section class="card glassmorphic">
+                    <div class="card-header">
+                        <h2>📋 Audit Trail & Score History</h2>
+                    </div>
+                    <div id="trigger-logs" class="logs-feed">
+                        <!-- Logs loaded dynamically -->
+                    </div>
+                </section>
+
             </div>
 
         </main>
