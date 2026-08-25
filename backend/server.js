@@ -402,15 +402,79 @@ app.post('/api/v2/ir12/ai/schedule-optimizer', authMiddleware(['ADMIN']), (req, 
     }
 });
 
-app.post('/api/v2/ir12/ai/interview-scorer', authMiddleware(['ADMIN', 'PANEL']), (req, res) => {
+const paretoFrontierEngine = require('./paretoFrontierEngine');
+const cspBacktrackingEngine = require('./cspBacktrackingEngine');
+const blindScreeningEngine = require('./blindScreeningEngine');
+const slotLeaseLockEngine = require('./slotLeaseLockEngine');
+
+// --- IR-11 GALE-SHAPLEY ENDPOINT ---
+app.post('/api/v2/ir11/matching/gale-shapley', authMiddleware(['ADMIN', 'RECRUITER']), (req, res) => {
     try {
-        const { transcriptText, domain } = req.body;
-        const result = aiInterviewScorer.evaluateTranscript(transcriptText || '', domain || 'SYSTEMS');
+        const { companies, students } = req.body;
+        const defaultCompanies = {
+            'Google': { capacity: 2, preferences: ['Preetham J', 'Rahul Sharma', 'Ananya Iyer', 'Vikram Patel'] },
+            'Microsoft': { capacity: 2, preferences: ['Rahul Sharma', 'Preetham J', 'Kavya Nair', 'Ananya Iyer'] },
+            'Amazon': { capacity: 1, preferences: ['Ananya Iyer', 'Vikram Patel', 'Rahul Sharma', 'Preetham J'] }
+        };
+        const defaultStudents = {
+            'Preetham J': { preferences: ['Google', 'Microsoft', 'Amazon'], minCgpa: 8.5 },
+            'Rahul Sharma': { preferences: ['Microsoft', 'Google', 'Amazon'], minCgpa: 8.0 },
+            'Ananya Iyer': { preferences: ['Google', 'Amazon', 'Microsoft'], minCgpa: 9.0 },
+            'Vikram Patel': { preferences: ['Amazon', 'Microsoft', 'Google'], minCgpa: 7.5 },
+            'Kavya Nair': { preferences: ['Microsoft', 'Google', 'Amazon'], minCgpa: 8.2 }
+        };
+
+        const result = galeShapleyEngine.solveStableMatching(companies || defaultCompanies, students || defaultStudents);
         res.json({ success: true, result });
     } catch (e) {
         res.status(500).json({ error: e.message });
     }
 });
+
+// --- IR-15 ADVANCED OPTIMIZATION REST ENDPOINTS ---
+app.post('/api/v2/ir15/pareto/frontier', authMiddleware(['ADMIN']), (req, res) => {
+    try {
+        const result = paretoFrontierEngine.calculateParetoFrontier(req.body.schedules || []);
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+app.post('/api/v2/ir15/csp/solve', authMiddleware(['ADMIN']), (req, res) => {
+    try {
+        const result = cspBacktrackingEngine.solveScheduleCSP(req.body.variables || {}, req.body.domains || {}, req.body.constraints || []);
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+app.post('/api/v2/ir15/screening/blind-passport', authMiddleware(['ADMIN', 'RECRUITER', 'STUDENT']), (req, res) => {
+    try {
+        const result = blindScreeningEngine.generateBlindedDossier(req.body.candidate || {
+            name: 'Preetham J',
+            cgpa: 9.2,
+            technicalSkills: ['Distributed Systems', 'TypeScript', 'Node.js', 'PostgreSQL', 'LoRa PHY'],
+            verifiedProjectsCount: 4,
+            department: 'Computer Science'
+        });
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+app.post('/api/v2/ir15/lease/acquire', authMiddleware(['ADMIN', 'STUDENT', 'RECRUITER']), (req, res) => {
+    try {
+        const { slotId = 'SLOT_DEMO_01', candidateId = 'STU_001', durationSeconds = 300 } = req.body;
+        const result = slotLeaseLockEngine.acquireLease(slotId, candidateId, durationSeconds);
+        res.json({ success: true, result });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
 
 
 
