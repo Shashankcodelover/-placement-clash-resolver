@@ -424,6 +424,115 @@
         </main>
     </div>
 
+    <!-- FLOATING AI AGENT BOT TRIGGER -->
+    <div id="ai-agent-fab" class="ai-agent-fab" onclick="toggleAIAgentModal()">
+        <span class="ai-fab-icon">🤖</span>
+        <span class="ai-fab-text">Placement AI Copilot</span>
+        <span class="ai-fab-pulse"></span>
+    </div>
+
+    <!-- AI AGENT BOT MODAL -->
+    <div id="ai-agent-modal" class="ai-agent-modal hidden">
+        <div class="ai-agent-box glassmorphic">
+            <div class="ai-agent-header">
+                <div class="ai-header-left">
+                    <span class="ai-header-avatar">🤖</span>
+                    <div>
+                        <h3>UNCLASH Placement AI Agent</h3>
+                        <p>Autonomous Gale-Shapley, Hungarian & Drive Ingestion</p>
+                    </div>
+                </div>
+                <button class="btn-close" onclick="toggleAIAgentModal()">✕</button>
+            </div>
+
+            <!-- Agent Quick Actions -->
+            <div class="ai-quick-actions">
+                <button class="quick-chip" onclick="triggerParseDriveMode()">🏢 Parse & Ingest Company Drive</button>
+                <button class="quick-chip" onclick="askAgentQuestion('How does Gale-Shapley guarantee zero blocking pairs?')">💍 Gale-Shapley Proof</button>
+                <button class="quick-chip" onclick="askAgentQuestion('How are interview clashes resolved during exam week?')">⚡ Clash Resolver</button>
+            </div>
+
+            <div id="ai-chat-body" class="ai-chat-body">
+                <div class="ai-msg bot">
+                    <p>Hello! I am the UNCLASH Placement & Matching AI Agent. I continuously optimize candidate interview assignments, resolve academic timetable clashes, and parse company job requirements. How can I assist your placement drive?</p>
+                    <span class="msg-time">Just now</span>
+                </div>
+            </div>
+
+            <!-- Ingest Drive Box -->
+            <div id="drive-ingest-panel" class="drive-ingest-panel hidden">
+                <h4>🏢 Autonomous Company Drive Ingest</h4>
+                <p>Paste company job description, rounds & CTC:</p>
+                <textarea id="ai-drive-text" placeholder="e.g. Google SDE Hiring, CTC 45 LPA, Min CGPA 8.0, Round 1: OA on Friday, Round 2: Tech on Saturday..."></textarea>
+                <div class="drive-panel-btns">
+                    <button class="btn btn-primary" onclick="submitCompanyDriveParse()">⚡ Ingest & Run Gale-Shapley</button>
+                    <button class="btn btn-outline" onclick="toggleDrivePanel()">Cancel</button>
+                </div>
+            </div>
+
+            <div class="ai-chat-input-bar">
+                <input type="text" id="ai-user-input" placeholder="Ask about clash resolution, drive schedules, or matching logic..." onkeydown="if(event.key === 'Enter') sendAgentMessage()">
+                <button class="btn btn-primary" onclick="sendAgentMessage()">Send</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- RECRUITER & STUDENT ONBOARDING MODAL -->
+    <div id="onboarding-modal" class="ai-agent-modal hidden">
+        <div class="ai-agent-box glassmorphic" style="max-width: 540px;">
+            <div class="ai-agent-header">
+                <div class="ai-header-left">
+                    <span class="ai-header-avatar">🎓</span>
+                    <div>
+                        <h3>Placement Portal Onboarding</h3>
+                        <p>Register your candidate or recruiter credentials</p>
+                    </div>
+                </div>
+                <button class="btn-close" onclick="toggleOnboardingModal()">✕</button>
+            </div>
+            <div style="padding: 20px;">
+                <div class="persona-tabs" style="display: flex; gap: 10px; margin-bottom: 15px;">
+                    <button class="btn btn-primary" id="tab-student-btn" onclick="switchOnboardingTab('student')">Student Registration</button>
+                    <button class="btn btn-outline" id="tab-recruiter-btn" onclick="switchOnboardingTab('recruiter')">Recruiter Registration</button>
+                </div>
+                <form id="onboarding-student-form" onsubmit="submitStudentOnboard(event)">
+                    <div class="form-group" style="margin-bottom: 12px;">
+                        <label>University USN *</label>
+                        <input type="text" id="ob-student-usn" required placeholder="e.g. 4JC21CS089" style="width: 100%; padding: 10px; border-radius: 8px; background: #0f172a; color: white; border: 1px solid #334155;">
+                    </div>
+                    <div class="form-group" style="margin-bottom: 12px;">
+                        <label>Full Name *</label>
+                        <input type="text" id="ob-student-name" required placeholder="e.g. Preetham J" style="width: 100%; padding: 10px; border-radius: 8px; background: #0f172a; color: white; border: 1px solid #334155;">
+                    </div>
+                    <div class="form-group" style="margin-bottom: 12px;">
+                        <label>CGPA *</label>
+                        <input type="number" step="0.1" id="ob-student-cgpa" required placeholder="e.g. 8.9" style="width: 100%; padding: 10px; border-radius: 8px; background: #0f172a; color: white; border: 1px solid #334155;">
+                    </div>
+                    <div class="form-group" style="margin-bottom: 12px;">
+                        <label>College Email *</label>
+                        <input type="email" id="ob-student-email" required placeholder="e.g. preetham@sjce.edu" style="width: 100%; padding: 10px; border-radius: 8px; background: #0f172a; color: white; border: 1px solid #334155;">
+                    </div>
+                    <button type="submit" class="btn btn-primary" style="width: 100%; padding: 12px; margin-top: 10px;">Register & Enter Match Pool</button>
+                </form>
+                <form id="onboarding-recruiter-form" class="hidden" onsubmit="submitRecruiterOnboard(event)">
+                    <div class="form-group" style="margin-bottom: 12px;">
+                        <label>Company Name *</label>
+                        <input type="text" id="ob-rec-company" required placeholder="e.g. Google India" style="width: 100%; padding: 10px; border-radius: 8px; background: #0f172a; color: white; border: 1px solid #334155;">
+                    </div>
+                    <div class="form-group" style="margin-bottom: 12px;">
+                        <label>Lead Recruiter Name *</label>
+                        <input type="text" id="ob-rec-name" required placeholder="e.g. Priya Sharma" style="width: 100%; padding: 10px; border-radius: 8px; background: #0f172a; color: white; border: 1px solid #334155;">
+                    </div>
+                    <div class="form-group" style="margin-bottom: 12px;">
+                        <label>Corporate Email *</label>
+                        <input type="email" id="ob-rec-email" required placeholder="e.g. recruiter@google.com" style="width: 100%; padding: 10px; border-radius: 8px; background: #0f172a; color: white; border: 1px solid #334155;">
+                    </div>
+                    <button type="submit" class="btn btn-primary" style="width: 100%; padding: 12px; margin-top: 10px;">Activate Corporate Placement Gateway</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
     <script src="app.js"></script>
 </body>
 </html>
