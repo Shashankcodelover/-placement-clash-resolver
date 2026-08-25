@@ -447,14 +447,16 @@
 
             <!-- Agent Quick Actions -->
             <div class="ai-quick-actions">
-                <button class="quick-chip" onclick="triggerParseDriveMode()">🏢 Parse & Ingest Company Drive</button>
-                <button class="quick-chip" onclick="askAgentQuestion('How does Gale-Shapley guarantee zero blocking pairs?')">💍 Gale-Shapley Proof</button>
-                <button class="quick-chip" onclick="askAgentQuestion('How are interview clashes resolved during exam week?')">⚡ Clash Resolver</button>
+                <button class="quick-chip" onclick="triggerParseDriveMode()">🏢 Parse Company Drive</button>
+                <button class="quick-chip" onclick="askAgentQuestion('Simulate 500 candidate Gale-Shapley matching with 10 companies')">💍 Gale-Shapley Matching</button>
+                <button class="quick-chip" onclick="askAgentQuestion('Solve AC-3 domain constraint backtracker for next week')">🧩 Solve AC-3 Constraints</button>
+                <button class="quick-chip" onclick="askAgentQuestion('Acquire 5-minute atomic OCC slot lease for Candidate #1')">🔒 5-Min OCC Slot Lease</button>
+                <button class="quick-chip" onclick="askAgentQuestion('Generate Zero-Knowledge Blind Screening Candidate Passport')">🛡️ Blind Screening</button>
             </div>
 
             <div id="ai-chat-body" class="ai-chat-body">
                 <div class="ai-msg bot">
-                    <p>Hello! I am the UNCLASH Placement & Matching AI Agent. I continuously optimize candidate interview assignments, resolve academic timetable clashes, and parse company job requirements. How can I assist your placement drive?</p>
+                    <p>Hello! I am the UNCLASH Placement & Operations Research AI Agent. I continuously optimize candidate interview assignments, resolve academic timetable clashes, and parse company job requirements with mathematical zero blocking pairs. How can I assist your placement drive?</p>
                     <span class="msg-time">Just now</span>
                 </div>
             </div>
@@ -471,7 +473,8 @@
             </div>
 
             <div class="ai-chat-input-bar">
-                <input type="text" id="ai-user-input" placeholder="Ask about clash resolution, drive schedules, or matching logic..." onkeydown="if(event.key === 'Enter') sendAgentMessage()">
+                <button id="ai-mic-btn" class="quick-chip" onclick="toggleCopilotVoice()" title="Voice Dictation">🎤</button>
+                <input type="text" id="ai-user-input" placeholder="Ask or speak your command (e.g. 'Solve AC-3 constraints')..." onkeydown="if(event.key === 'Enter') sendAgentMessage()">
                 <button class="btn btn-primary" onclick="sendAgentMessage()">Send</button>
             </div>
         </div>

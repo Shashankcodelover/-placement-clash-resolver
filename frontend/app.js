@@ -945,6 +945,55 @@ function triggerParseDriveMode() {
     if (panel) panel.classList.remove('hidden');
 }
 
+let isCopilotListening = false;
+
+function toggleCopilotVoice() {
+    if (typeof window === 'undefined') return;
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    const micBtn = document.getElementById('ai-mic-btn');
+    if (!SpeechRecognition) {
+        alert('Voice dictation is not supported by your browser.');
+        return;
+    }
+
+    if (isCopilotListening) {
+        isCopilotListening = false;
+        if (micBtn) micBtn.innerHTML = '🎤';
+        return;
+    }
+
+    try {
+        const recognition = new SpeechRecognition();
+        recognition.lang = 'en-US';
+        recognition.continuous = false;
+        recognition.interimResults = false;
+
+        recognition.onstart = () => {
+            isCopilotListening = true;
+            if (micBtn) micBtn.innerHTML = '🔴';
+        };
+        recognition.onend = () => {
+            isCopilotListening = false;
+            if (micBtn) micBtn.innerHTML = '🎤';
+        };
+        recognition.onerror = () => {
+            isCopilotListening = false;
+            if (micBtn) micBtn.innerHTML = '🎤';
+        };
+        recognition.onresult = (event) => {
+            const transcript = event.results[0][0].transcript;
+            if (transcript) {
+                document.getElementById('ai-user-input').value = transcript;
+                sendAgentMessage(transcript);
+            }
+        };
+        recognition.start();
+    } catch (e) {
+        isCopilotListening = false;
+        if (micBtn) micBtn.innerHTML = '🎤';
+    }
+}
+
 async function sendAgentMessage(customText) {
     const inputEl = document.getElementById('ai-user-input');
     const textToSend = (customText || inputEl.value).trim();
@@ -957,6 +1006,19 @@ async function sendAgentMessage(customText) {
     userMsgDiv.innerHTML = `<p>${textToSend}</p><span class="msg-time">${new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</span>`;
     chatBody.appendChild(userMsgDiv);
     chatBody.scrollTop = chatBody.scrollHeight;
+
+    const lower = textToSend.toLowerCase();
+
+    // Trigger UI Actions autonomously based on natural language commands
+    if (lower.includes('gale') && lower.includes('matching')) {
+        setTimeout(() => runGaleShapleySimulation(), 200);
+    } else if (lower.includes('ac-3') || lower.includes('csp') || lower.includes('constraint')) {
+        setTimeout(() => solveAC3Constraints(), 200);
+    } else if (lower.includes('lease') || lower.includes('occ') || lower.includes('slot')) {
+        setTimeout(() => testSlotLeaseLock(), 200);
+    } else if (lower.includes('blind') || lower.includes('passport') || lower.includes('screening')) {
+        setTimeout(() => generateBlindScreeningProof(), 200);
+    }
 
     try {
         const res = await fetch('/api/ai/agent-chat', {
@@ -974,7 +1036,7 @@ async function sendAgentMessage(customText) {
     } catch (err) {
         const botMsgDiv = document.createElement('div');
         botMsgDiv.className = 'ai-msg bot';
-        botMsgDiv.innerHTML = `<p>Processed locally: ${textToSend}. Gale-Shapley stability checks and OCC slot leases active.</p><span class="msg-time">${new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</span>`;
+        botMsgDiv.innerHTML = `<p>Processed locally: ${textToSend}. Gale-Shapley stability checks, AC-3 constraint solving, and OCC slot leases active.</p><span class="msg-time">${new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</span>`;
         chatBody.appendChild(botMsgDiv);
         chatBody.scrollTop = chatBody.scrollHeight;
     }
