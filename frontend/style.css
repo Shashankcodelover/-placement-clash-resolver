@@ -585,11 +585,16 @@ body {
     border: 1px solid transparent;
 }
 
-.result-box.show {
+.result-box.show,
+.result-box[style*="display: block"],
+.result-box[style*="display:block"] {
     padding: 16px 18px;
-    max-height: 400px;
+    max-height: 1200px;
     opacity: 1;
+    overflow: visible;
     transform: translateY(0);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    background: rgba(15, 23, 42, 0.85);
 }
 
 .result-box.hidden { display: none; }
@@ -935,6 +940,14 @@ body {
 @keyframes pulseGlow {
     0%, 100% { transform: scale(1); opacity: 1; }
     50% { transform: scale(1.4); opacity: 0.6; }
+}
+
+.hidden {
+    display: none !important;
+}
+
+.ai-agent-modal.hidden {
+    display: none !important;
 }
 
 .ai-agent-modal {
