@@ -81,6 +81,7 @@
             <button class="tab-btn" onclick="switchAITab('tab-cascade-ripple')">🌊 Live Offer Cascade</button>
             <button class="tab-btn" onclick="switchAITab('tab-blind-screening')">🕶️ Blind Screening</button>
             <button class="tab-btn" onclick="switchAITab('tab-slot-lease')">🔒 Slot Lease Lock</button>
+            <button class="tab-btn" onclick="switchAITab('tab-kuhn-munkres')">⚡ Kuhn-Munkres Matcher (V4.0)</button>
         </div>
 
 
@@ -266,6 +267,47 @@
                     <button class="btn btn-accent" onclick="testSlotLeaseLock()"><span>🔒 Acquire 5-Minute Atomic Slot Lease</span></button>
                 </div>
                 <div id="slot-lease-result" class="result-box" style="display:none;"></div>
+            </div>
+
+            <!-- TAB 13: UNCLASH V4.0 KUHN-MUNKRES BIPARTITE MATCHER -->
+            <div id="tab-kuhn-munkres" class="ai-tab-content">
+                <div class="card-header">
+                    <h2>⚡ UNCLASH V4.0: Autonomous Kuhn-Munkres Optimal Bipartite Matcher & Cascade Healer</h2>
+                    <span class="feature-status active">O(V³) Global Regret Minimum</span>
+                </div>
+                <p class="card-description">
+                    Solves the minimum-cost maximum-flow bipartite matching problem across corporate interview rooms (Google, Microsoft, Goldman Sachs, Amazon, Uber), eliminating multi-panel clashes, validating KKT Pareto-optimality (duality gap = 0.000), and issuing a cryptographic allocation passport.
+                </p>
+
+                <!-- Visual War Room Timeline Display -->
+                <div class="kuhn-timeline-grid" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin: 18px 0; padding: 14px; background: rgba(0,0,0,0.3); border-radius: 12px; border: 1px solid rgba(255,255,255,0.1);">
+                    <div style="background: rgba(66, 133, 244, 0.1); border: 1px solid rgba(66, 133, 244, 0.3); padding: 10px; border-radius: 8px;">
+                        <h4 style="color: #60a5fa; font-size: 0.85rem; margin-bottom: 4px;">🏢 Google Boardroom A</h4>
+                        <div style="font-size: 0.75rem; color: #cbd5e1;">Systems Architecture · 10:00 AM</div>
+                        <div id="slot-tag-g1" style="font-size: 0.7rem; font-family: monospace; color: #fbbf24; margin-top: 4px;">POTENTIAL CLASH DETECTED</div>
+                    </div>
+                    <div style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); padding: 10px; border-radius: 8px;">
+                        <h4 style="color: #34d399; font-size: 0.85rem; margin-bottom: 4px;">🏢 Microsoft Lab 402</h4>
+                        <div style="font-size: 0.75rem; color: #cbd5e1;">Azure Core Cloud · 10:30 AM</div>
+                        <div id="slot-tag-m1" style="font-size: 0.7rem; font-family: monospace; color: #fbbf24; margin-top: 4px;">POTENTIAL CLASH DETECTED</div>
+                    </div>
+                    <div style="background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.3); padding: 10px; border-radius: 8px;">
+                        <h4 style="color: #fbbf24; font-size: 0.85rem; margin-bottom: 4px;">🏢 Goldman Sachs Hall</h4>
+                        <div style="font-size: 0.75rem; color: #cbd5e1;">HFT Quant Strategies · 11:00 AM</div>
+                        <div id="slot-tag-gs1" style="font-size: 0.7rem; font-family: monospace; color: #94a3b8; margin-top: 4px;">PENDING BIPARTITE MATRIX</div>
+                    </div>
+                    <div style="background: rgba(139, 92, 246, 0.1); border: 1px solid rgba(139, 92, 246, 0.3); padding: 10px; border-radius: 8px;">
+                        <h4 style="color: #c084fc; font-size: 0.85rem; margin-bottom: 4px;">🏢 Uber Seminar Room</h4>
+                        <div style="font-size: 0.75rem; color: #cbd5e1;">Distributed Infra · 2:00 PM</div>
+                        <div id="slot-tag-u1" style="font-size: 0.7rem; font-family: monospace; color: #94a3b8; margin-top: 4px;">PENDING BIPARTITE MATRIX</div>
+                    </div>
+                </div>
+
+                <div class="action-bar" style="display: flex; gap: 10px;">
+                    <button class="btn btn-primary" onclick="solveKuhnMunkres()"><span>⚡ Execute Kuhn-Munkres Bipartite Resolver (O(V³))</span></button>
+                    <button class="btn btn-outline" onclick="simulateDelayRipple()"><span>⏱️ Simulate 20-Min Delay & Auto-Heal Cascade</span></button>
+                </div>
+                <div id="kuhn-munkres-result" class="result-box" style="display:none; margin-top: 14px;"></div>
             </div>
 
         </section>
